@@ -64,7 +64,7 @@ The following regression models were implemented:
 
 - Linear Regression
 - Random Forest Regressor
-- Gradient Boosting Regressor
+
 
 ---
 
