@@ -1,6 +1,7 @@
 # Non-Invasive Prediction of Vitamin D Deficiency Using Machine Learning
 
 ## Project Overview
+
 Vitamin D deficiency is a widespread health issue that can lead to bone disorders, weakened immunity, and other health complications. Traditional diagnosis requires blood tests, which are invasive and costly.
 
 This project proposes a **machine learning-based non-invasive method** to estimate Vitamin D levels using lifestyle and physiological parameters.
@@ -19,6 +20,7 @@ The system predicts Vitamin D levels using factors such as:
 ---
 
 ## Dataset
+
 The dataset contains **10,000 samples** with **17 features** related to lifestyle and physiological parameters affecting Vitamin D levels.
 
 Features include:
@@ -65,7 +67,6 @@ The following regression models were implemented:
 - Linear Regression
 - Random Forest Regressor
 
-
 ---
 
 ## Model Evaluation Metrics
@@ -78,10 +79,10 @@ Model performance was evaluated using:
 
 Example results:
 
-| Model | R² Score |
-|------|------|
-| Linear Regression | ~0.81 |
-| Random Forest | Higher accuracy |
+| Model             | R² Score        |
+| ----------------- | --------------- |
+| Linear Regression | ~0.78           |
+| Random Forest     | Higher accuracy |
 
 ---
 
@@ -115,7 +116,7 @@ Indoor Work: 6 hours/day
 Predicted Vitamin D Level:
 
 ```
-25.58 ng/ml
+25.65 ng/ml
 ```
 
 Vitamin D Status:
