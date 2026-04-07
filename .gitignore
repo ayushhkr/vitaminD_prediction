@@ -1,0 +1,22 @@
+﻿# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+
+# Virtual environments
+.venv/
+venv/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# VS Code local settings
+.vscode/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Temporary Office lock files
+~$*.xlsx
