@@ -1,22 +1,5 @@
-﻿# Python
-__pycache__/
-*.py[cod]
-*.pyo
-*.pyd
-
-# Virtual environments
+﻿__pycache__/
+*.pyc
 .venv/
 venv/
-
-# Jupyter
 .ipynb_checkpoints/
-
-# VS Code local settings
-.vscode/
-
-# OS files
-.DS_Store
-Thumbs.db
-
-# Temporary Office lock files
-~$*.xlsx
