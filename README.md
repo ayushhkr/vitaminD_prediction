@@ -1,165 +1,174 @@
-# Non-Invasive Prediction of Vitamin D Deficiency Using Machine Learning
+# Vitamin D Prediction Notebook
 
-## Project Overview
+## Overview
 
-Vitamin D deficiency is a widespread health issue that can lead to bone disorders, weakened immunity, and other health complications. Traditional diagnosis requires blood tests, which are invasive and costly.
+This project builds and compares machine learning pipelines to estimate Vitamin D levels from non-invasive features and then infer deficiency risk.
 
-This project proposes a **machine learning-based non-invasive method** to estimate Vitamin D levels using lifestyle and physiological parameters.
+The notebook now includes two data tracks:
 
-The system predicts Vitamin D levels using factors such as:
+- A custom Vitamin D dataset (`VitaminD_Dataset.csv`) with lifestyle and body-composition signals.
+- A public NHANES (2017-2018) pipeline that predicts serum Vitamin D from demographic, BMI, activity, diet, supplement, seasonality, sun-exposure, and smoking-related features.
 
-- Age
-- BMI
-- Sun exposure
-- Skin exposure
-- Diet (fish and dairy intake)
-- Physical activity
-- Indoor working hours
-- Body fat percentage
+The goal is to support screening-style prediction, not replace lab diagnosis.
 
----
+## What's Updated
 
-## Dataset
+The latest notebook version adds the following major updates:
 
-The dataset contains **10,000 samples** with **17 features** related to lifestyle and physiological parameters affecting Vitamin D levels.
+1. Stronger preprocessing and schema robustness
 
-Features include:
+- Handles multiple dataset variants (`VitaminD_Level_ng_ml` or `Risk_Score`).
+- Avoids leakage columns (for example `Deficiency_Status`).
+- Uses one-hot encoding for feature safety across categorical inputs.
+- Applies numeric coercion and fallback target encoding when required.
 
-- Age
-- Gender
-- BMI
-- Body fat percentage
-- Sun exposure duration
-- Skin exposure percentage
-- Sunscreen usage
-- Fish intake per week
-- Dairy intake per week
-- Alcohol consumption
-- Physical activity hours
-- Indoor working hours
-- Skin tone
-
-Target variable:
-
-- VitaminD_Level_ng_ml
-
----
-
-## Machine Learning Pipeline
-
-The project follows a complete machine learning workflow:
-
-1. Data Loading
-2. Exploratory Data Analysis (EDA)
-3. Data Preprocessing
-4. Feature Selection
-5. Model Training
-6. Model Evaluation
-7. Feature Importance Analysis
-8. Prediction System
-
----
-
-## Models Used
-
-The following regression models were implemented:
+2. Expanded model suite on the custom dataset
 
 - Linear Regression
 - Random Forest Regressor
+- Gradient Boosting Regressor
+- XGBoost Regressor
 
----
+3. Clinical prediction outputs
 
-## Model Evaluation Metrics
+- Predicts continuous Vitamin D level.
+- Converts to a binary deficiency decision using clinical threshold logic.
 
-Model performance was evaluated using:
+4. Full NHANES regression pipeline
 
-- R² Score
-- Mean Absolute Error (MAE)
-- Root Mean Squared Error (RMSE)
+- Pulls multiple NHANES modules directly.
+- Cleans non-response codes and implausible physiological values.
+- Applies IQR clipping and median imputation.
+- Trains/evaluates the same model family for fair comparison.
 
-Example results:
+5. Regression vs classification benchmark
 
-| Model             | R² Score        |
-| ----------------- | --------------- |
-| Linear Regression | ~0.78           |
-| Random Forest     | Higher accuracy |
+- Compares `Regression -> Threshold` against direct binary classification.
+- Reports clinical metrics: Accuracy, F1, ROC-AUC, Sensitivity, Specificity.
 
----
+6. Improved NHANES performance section
 
-## Feature Importance
+- Additional feature engineering: season, dietary vitamin D, supplement vitamin D, sun exposure, smoking status.
+- Polynomial/interactions for non-linear effects.
+- Hyperparameter tuning with randomized search for Random Forest and XGBoost.
+- Stacking ensemble (RF + XGB + GBR with Ridge meta-model).
+- 5-fold CV reporting and top-feature importance visualization.
 
-Feature importance analysis revealed that **sun exposure duration** is the most significant factor influencing Vitamin D levels, followed by:
+## Data
 
-- Body fat percentage
-- Skin exposure
-- Fish intake
-- Physical activity
+### Custom dataset
 
-This aligns with biological understanding that Vitamin D synthesis primarily occurs in the skin through sunlight exposure.
+- File: `VitaminD_Dataset.csv`
+- Typical signals: age, gender, BMI, body fat, sun exposure, skin exposure, fish/dairy intake, alcohol, physical activity, indoor work.
 
----
+### NHANES dataset
 
-## Example Prediction
+- Downloaded in-notebook from official CDC NHANES XPT files.
+- Uses merged modules to build a cleaner population-level prediction pipeline.
 
-Example user input:
+## Notebook Workflow
 
-```
-Age: 25
-BMI: 23
-Sun Exposure: 30 minutes
-Skin Exposure: 40%
-Fish Intake: 2/week
-Physical Activity: 3 hours/week
-Indoor Work: 6 hours/day
-```
+1. Import libraries and load custom dataset.
+2. EDA and correlation inspection.
+3. Preprocess and encode features.
+4. Train/test split and baseline model evaluation.
+5. Compare model metrics and visualize feature importance.
+6. Generate single-person clinical prediction on custom features.
+7. Build NHANES pipeline and run same model family.
+8. Compare custom vs NHANES outcomes.
+9. Compare regression-thresholding vs direct classification.
+10. Run improved NHANES pipeline with tuning + stacking + CV.
 
-Predicted Vitamin D Level:
+## Results (Brief)
 
-```
-25.65 ng/ml
-```
+- On the custom dataset, tree-based models outperform the simple linear baseline in predictive accuracy.
+- Feature-importance outputs consistently highlight sunlight and lifestyle-linked variables as major contributors.
+- In the NHANES section, the improved pipeline (feature engineering + tuning + stacking) gives stronger and more stable performance than untuned baselines.
+- The clinical comparison section shows that both modeling strategies can be used for deficiency screening, with trade-offs between sensitivity and specificity depending on thresholding strategy.
+- The notebook ends with sample-person predictions in both `nmol/L` and `ng/mL`, plus a direct deficiency label.
 
-Vitamin D Status:
+## Metrics Snapshot Template
 
-```
-Insufficient
-```
+Use these tables to paste the latest notebook outputs after each run.
 
----
+### Custom Dataset Regression Metrics
 
-## Technologies Used
+| Model             |  R2 | MAE | RMSE |
+| ----------------- | --: | --: | ---: |
+| Linear Regression |     |     |      |
+| Random Forest     |     |     |      |
+| Gradient Boosting |     |     |      |
+| XGBoost           |     |     |      |
+
+Best model this run:
+
+### NHANES Baseline Regression Metrics
+
+| Model             |  R2 | MAE | RMSE |
+| ----------------- | --: | --: | ---: |
+| Linear Regression |     |     |      |
+| Random Forest     |     |     |      |
+| Gradient Boosting |     |     |      |
+| XGBoost           |     |     |      |
+
+Best model this run:
+
+### NHANES Improved Pipeline Metrics
+
+| Model                 |  R2 | MAE | RMSE |
+| --------------------- | --: | --: | ---: |
+| Linear Regression     |     |     |      |
+| Random Forest (tuned) |     |     |      |
+| XGBoost (tuned)       |     |     |      |
+| Gradient Boosting     |     |     |      |
+| Stacking Ensemble     |     |     |      |
+
+Best model this run:
+
+5-fold CV for best model: mean = , std =
+
+### Clinical Binary Task (Regression vs Classification)
+
+| Dataset | Approach                | Accuracy |  F1 | ROC-AUC | Sensitivity | Specificity |
+| ------- | ----------------------- | -------: | --: | ------: | ----------: | ----------: |
+| Custom  | Regression -> Threshold |          |     |         |             |             |
+| Custom  | Direct Classification   |          |     |         |             |             |
+| NHANES  | Regression -> Threshold |          |     |         |             |             |
+| NHANES  | Direct Classification   |          |     |         |             |             |
+
+## Tech Stack
 
 - Python
-- Pandas
-- NumPy
-- Scikit-learn
-- Matplotlib
-- Seaborn
+- pandas, numpy
+- scikit-learn
+- xgboost
+- matplotlib, seaborn
 
----
+## Repository Structure
 
-## Project Structure
-
-```
-vitaminD_prediction/
-│
-├── VitaminD_Dataset.csv
-├── vitD_prediction.ipynb
-└── README.md
+```text
+vit D/
+|- README.md
+|- VitaminD_Dataset.csv
+`- vitD prediction.ipynb
 ```
 
----
+## How To Run
 
-## Future Improvements
+1. Open `vitD prediction.ipynb` in VS Code/Jupyter.
+2. Install required packages in your active environment:
 
-Possible future enhancements include:
+```bash
+pip install pandas numpy scikit-learn matplotlib seaborn xgboost
+```
 
-- Adding classification models for Vitamin D deficiency categories
-- Integrating real clinical datasets
-- Building a web application for user input
-- Integrating IoT sensors for real-time sun exposure monitoring
+3. Run cells top-to-bottom.
+4. For NHANES sections, keep internet enabled because data is downloaded from CDC endpoints.
 
----
+## Notes
+
+- This is a research/education pipeline for screening insight.
+- Clinical diagnosis must rely on professional medical assessment and validated lab testing.
 
 ## Author
 
