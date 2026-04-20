@@ -1,5 +1,10 @@
-﻿__pycache__/
+__pycache__/
 *.pyc
 .venv/
 venv/
 .ipynb_checkpoints/
+.pytest_cache/
+pytest-cache-files-*/
+artifacts/models/*.joblib
+artifacts/metrics/*.csv
+artifacts/metrics/*.json

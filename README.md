@@ -1,175 +1,155 @@
-# Vitamin D Prediction Notebook
+# Vitamin D Prediction
 
-## Overview
+This repository is organized into two clear versions of the same project:
 
-This project builds and compares machine learning pipelines to estimate Vitamin D levels from non-invasive features and then infer deficiency risk.
+- a simple notebook version for college submission
+- an advanced version for personal project work
 
-The notebook now includes two data tracks:
+## Project Structure
 
-- A custom Vitamin D dataset (`VitaminD_Dataset.csv`) with lifestyle and body-composition signals.
-- A public NHANES (2017-2018) pipeline that predicts serum Vitamin D from demographic, BMI, activity, diet, supplement, seasonality, sun-exposure, and smoking-related features.
+```text
+vitaminD_prediction/
+|- data/
+|  `- VitaminD_Dataset.csv
+|- notebooks/
+|  |- vitaminD_college.ipynb
+|  `- vitaminD_advanced.ipynb
+|- src/
+|  |- preprocessing.py
+|  |- train.py
+|  `- evaluate.py
+|- artifacts/
+|  |- models/
+|  |- metrics/
+|  `- plots/
+|- requirements.txt
+|- README.md
+`- .gitignore
+```
 
-The goal is to support screening-style prediction, not replace lab diagnosis.
+## Versions
 
-## What's Updated
+### `notebooks/vitaminD_college.ipynb`
 
-The latest notebook version adds the following major updates:
+This is the simple version for college submission.
 
-1. Stronger preprocessing and schema robustness
+It includes:
 
-- Handles multiple dataset variants (`VitaminD_Level_ng_ml` or `Risk_Score`).
-- Avoids leakage columns (for example `Deficiency_Status`).
-- Uses one-hot encoding for feature safety across categorical inputs.
-- Applies numeric coercion and fallback target encoding when required.
+- custom dataset only
+- basic preprocessing
+- train/test split
+- simple regression models
+- evaluation with R2, MAE, and RMSE
+- feature importance plot
+- one sample prediction
 
-2. Expanded model suite on the custom dataset
+It intentionally removes:
 
-- Linear Regression
-- Random Forest Regressor
-- Gradient Boosting Regressor
-- XGBoost Regressor
+- NHANES analysis
+- complex pipelines
+- cross-validation
+- hyperparameter tuning
+- advanced feature engineering
 
-3. Clinical prediction outputs
+### `notebooks/vitaminD_advanced.ipynb`
 
-- Predicts continuous Vitamin D level.
-- Converts to a binary deficiency decision using clinical threshold logic.
+This is the full personal-project notebook.
 
-4. Full NHANES regression pipeline
+It includes:
 
-- Pulls multiple NHANES modules directly.
-- Cleans non-response codes and implausible physiological values.
-- Applies IQR clipping and median imputation.
-- Trains/evaluates the same model family for fair comparison.
-
-5. Regression vs classification benchmark
-
-- Compares `Regression -> Threshold` against direct binary classification.
-- Reports clinical metrics: Accuracy, F1, ROC-AUC, Sensitivity, Specificity.
-
-6. Improved NHANES performance section
-
-- Additional feature engineering: season, dietary vitamin D, supplement vitamin D, sun exposure, smoking status.
-- Polynomial/interactions for non-linear effects.
-- Hyperparameter tuning with randomized search for Random Forest and XGBoost.
-- Stacking ensemble (RF + XGB + GBR with Ridge meta-model).
-- 5-fold CV reporting and top-feature importance visualization.
+- custom dataset work
+- NHANES experiments
+- focused feature engineering
+- multiple models including XGBoost
+- tuning and comparison work
+- advanced analysis and visualizations
 
 ## Data
 
-### Custom dataset
+The custom dataset is stored in:
 
-- File: `VitaminD_Dataset.csv`
-- Typical signals: age, gender, BMI, body fat, sun exposure, skin exposure, fish/dairy intake, alcohol, physical activity, indoor work.
+- `data/VitaminD_Dataset.csv`
 
-### NHANES dataset
+Main target column:
 
-- Downloaded in-notebook from official CDC NHANES XPT files.
-- Uses merged modules to build a cleaner population-level prediction pipeline.
+- `VitaminD_Level_ng_ml`
 
-## Notebook Workflow
+Main input features include:
 
-1. Import libraries and load custom dataset.
-2. EDA and correlation inspection.
-3. Preprocess and encode features.
-4. Train/test split and baseline model evaluation.
-5. Compare model metrics and visualize feature importance.
-6. Generate single-person clinical prediction on custom features.
-7. Build NHANES pipeline and run same model family.
-8. Compare custom vs NHANES outcomes.
-9. Compare regression-thresholding vs direct classification.
-10. Run improved NHANES pipeline with tuning + stacking + CV.
+- age
+- gender
+- weight
+- height
+- BMI
+- body fat
+- sun exposure
+- skin exposure
+- fish and dairy intake
+- alcohol intake
+- physical activity
+- indoor work hours
 
-## Results (Brief)
+## Advanced Code
 
-- On the custom dataset, tree-based models outperform the simple linear baseline in predictive accuracy.
-- Feature-importance outputs consistently highlight sunlight and lifestyle-linked variables as major contributors.
-- In the NHANES section, the improved pipeline (feature engineering + tuning + stacking) gives stronger and more stable performance than untuned baselines.
-- The clinical comparison section shows that both modeling strategies can be used for deficiency screening, with trade-offs between sensitivity and specificity depending on thresholding strategy.
-- The notebook ends with sample-person predictions in both `nmol/L` and `ng/mL`, plus a direct deficiency label.
+Reusable code lives in `src/`:
 
-## Metrics Snapshot Template
+- `preprocessing.py`
+  - dataset loading
+  - schema validation
+  - preprocessing pipeline
+- `train.py`
+  - model training
+  - cross-validation
+  - artifact saving
+- `evaluate.py`
+  - metric review
+  - sample prediction from the saved model
 
-Use these tables to paste the latest notebook outputs after each run.
+## Artifacts
 
-### Custom Dataset Regression Metrics
+Generated outputs are stored in:
 
-| Model             |  R2 | MAE | RMSE |
-| ----------------- | --: | --: | ---: |
-| Linear Regression |     |     |      |
-| Random Forest     |     |     |      |
-| Gradient Boosting |     |     |      |
-| XGBoost           |     |     |      |
+- `artifacts/models/`
+- `artifacts/metrics/`
+- `artifacts/plots/`
 
-Best model this run:
+Current saved outputs may include:
 
-### NHANES Baseline Regression Metrics
+- trained model file
+- regression metrics
+- prediction outputs
+- run summary
 
-| Model             |  R2 | MAE | RMSE |
-| ----------------- | --: | --: | ---: |
-| Linear Regression |     |     |      |
-| Random Forest     |     |     |      |
-| Gradient Boosting |     |     |      |
-| XGBoost           |     |     |      |
+## Installation
 
-Best model this run:
-
-### NHANES Improved Pipeline Metrics
-
-| Model                 |  R2 | MAE | RMSE |
-| --------------------- | --: | --: | ---: |
-| Linear Regression     |     |     |      |
-| Random Forest (tuned) |     |     |      |
-| XGBoost (tuned)       |     |     |      |
-| Gradient Boosting     |     |     |      |
-| Stacking Ensemble     |     |     |      |
-
-Best model this run:
-
-5-fold CV for best model: mean = , std =
-
-### Clinical Binary Task (Regression vs Classification)
-
-| Dataset | Approach                | Accuracy |  F1 | ROC-AUC | Sensitivity | Specificity |
-| ------- | ----------------------- | -------: | --: | ------: | ----------: | ----------: |
-| Custom  | Regression -> Threshold |          |     |         |             |             |
-| Custom  | Direct Classification   |          |     |         |             |             |
-| NHANES  | Regression -> Threshold |          |     |         |             |             |
-| NHANES  | Direct Classification   |          |     |         |             |             |
-
-## Tech Stack
-
-- Python
-- pandas, numpy
-- scikit-learn
-- xgboost
-- matplotlib, seaborn
-
-## Repository Structure
-
-```text
-vit D/
-|- README.md
-|- VitaminD_Dataset.csv
-`- vitD prediction.ipynb
-```
-
-## How To Run
-
-1. Open `vitD prediction.ipynb` in VS Code/Jupyter.
-2. Install required packages in your active environment:
+Create or activate your environment, then run:
 
 ```bash
-pip install pandas numpy scikit-learn matplotlib seaborn xgboost
+pip install -r requirements.txt
 ```
 
-3. Run cells top-to-bottom.
-4. For NHANES sections, keep internet enabled because data is downloaded from CDC endpoints.
+## Run The Advanced Code
+
+Train the advanced version:
+
+```bash
+python src/train.py
+```
+
+Review saved metrics:
+
+```bash
+python src/evaluate.py --mode metrics
+```
+
+Run one sample prediction:
+
+```bash
+python src/evaluate.py --mode predict
+```
 
 ## Notes
 
-- This is a research/education pipeline for screening insight.
-- Clinical diagnosis must rely on professional medical assessment and validated lab testing.
-
-## Author
-
-Ayush Kumar
+- The college notebook is meant to stay simple and easy to explain.
+- The advanced notebook and `src/` code are for stronger project presentation and experimentation.
+- This is a machine learning screening project, not a clinical diagnostic tool.
