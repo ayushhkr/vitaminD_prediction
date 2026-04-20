@@ -8,3 +8,4 @@ pytest-cache-files-*/
 artifacts/models/*.joblib
 artifacts/metrics/*.csv
 artifacts/metrics/*.json
+deploy_app/model.pkl
