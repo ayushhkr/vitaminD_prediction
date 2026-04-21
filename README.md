@@ -256,4 +256,4 @@ This makes the repository useful both for academic submission and for showcasing
 
 ## Author
 
-Ayush Kumar
+Ayush kumar
