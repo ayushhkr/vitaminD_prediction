@@ -205,6 +205,16 @@ Create or activate a Python environment, then install dependencies:
 pip install -r requirements.txt
 ```
 
+## Live Deployment
+
+Render app link:
+
+- https://vitamind-predictor.onrender.com
+
+Note:
+
+- The free Render instance may take a short time to wake up on first request.
+
 ## How To Run
 
 ### Open the notebooks
