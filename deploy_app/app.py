@@ -50,6 +50,7 @@ st.markdown(
             radial-gradient(circle at 88% 6%, rgba(44, 142, 127, 0.2), transparent 30%),
             linear-gradient(180deg, var(--sand-50) 0%, var(--sand-100) 48%, #fdf1dd 100%);
         color: var(--ink-900);
+        overflow-x: hidden;
     }
     .block-container {
         padding-top: var(--space-4);
@@ -238,17 +239,43 @@ st.markdown(
             padding-top: var(--space-3);
             padding-bottom: var(--space-4);
         }
+        div[data-testid="stHorizontalBlock"] {
+            flex-direction: column !important;
+            gap: var(--space-2) !important;
+        }
+        div[data-testid="column"] {
+            width: 100% !important;
+            flex: 1 1 100% !important;
+            min-width: 100% !important;
+        }
         .hero-title {
-            font-size: 2rem;
+            font-size: 1.75rem;
+            line-height: 1.12;
         }
         .metric-strip {
             grid-template-columns: 1fr;
         }
         .hero-card, .section-card, .insight-card {
             padding: var(--space-3);
+            border-radius: 18px;
         }
-        div[data-testid="stForm"] div[data-testid="stHorizontalBlock"] {
-            gap: var(--space-2);
+        .section-title {
+            font-size: 0.96rem;
+        }
+        .section-text {
+            font-size: 0.82rem;
+        }
+        div[data-testid="stMetric"] {
+            padding: 0.85rem 0.9rem;
+        }
+        div[data-testid="stMetricValue"] {
+            font-size: 1.25rem;
+        }
+        div[data-testid="stForm"] {
+            padding: 0.9rem;
+        }
+        div[data-testid="stForm"] button[kind="formSubmit"] {
+            min-height: 2.7rem;
         }
     }
     </style>
