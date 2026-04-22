@@ -1,5 +1,15 @@
 # Vitamin D Prediction
 
+## Live Deployment
+
+Render app link:
+
+- https://vitamind-predictor.onrender.com
+
+Note:
+
+- The free Render instance may take a short time to wake up on first request.
+
 This repository contains a machine learning project for predicting Vitamin D level from non-invasive features. It is organized into two parallel versions:
 
 - a simpler notebook version for college submission
@@ -204,16 +214,6 @@ Create or activate a Python environment, then install dependencies:
 ```bash
 pip install -r requirements.txt
 ```
-
-## Live Deployment
-
-Render app link:
-
-- https://vitamind-predictor.onrender.com
-
-Note:
-
-- The free Render instance may take a short time to wake up on first request.
 
 ## How To Run
 
