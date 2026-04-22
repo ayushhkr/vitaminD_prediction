@@ -4,7 +4,7 @@
 
 Render app link:
 
-- https://vitamind-predictor.onrender.com
+- [https://vitamind-predictor.onrender.com](https://vitamin-d-predictor.onrender.com)
 
 Note:
 
