@@ -214,7 +214,6 @@ Create or activate a Python environment, then install dependencies:
 ```bash
 pip install -r requirements.txt
 ```
-
 ## How To Run
 
 ### Open the notebooks
