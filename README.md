@@ -33,7 +33,7 @@ vitaminD_prediction/
 |- data/
 |  `- VitaminD_Dataset.csv
 |- notebooks/
-|  |- vitaminD_college.ipynb
+|  |- vitaminD_simple.ipynb
 |  `- vitaminD_advanced.ipynb
 |- src/
 |  |- preprocessing.py
@@ -88,7 +88,7 @@ The simpler NHANES workflow uses only a small set of understandable features suc
 
 ## Notebook Versions
 
-### `notebooks/vitaminD_college.ipynb`
+### `notebooks/vitaminD_simple.ipynb`
 
 This is the simpler version for college submission.
 
@@ -216,7 +216,7 @@ pip install -r requirements.txt
 
 Run either notebook in Jupyter or VS Code:
 
-- `notebooks/vitaminD_college.ipynb`
+- `notebooks/vitaminD_simple.ipynb`
 - `notebooks/vitaminD_advanced.ipynb`
 
 Note:
