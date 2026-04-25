@@ -21,22 +21,96 @@ st.set_page_config(
 st.markdown(
     """
     <style>
+    :root {
+        --bg: #f5ecdc;
+        --surface: #fbf4e8;
+        --card: #fffaf0;
+        --border: #d8c6aa;
+        --text: #1f2937;
+        --muted: #4b5563;
+        --primary: #0f766e;
+        --primary-strong: #115e59;
+        --success: #2e7d32;
+        --warning: #b7791f;
+        --danger: #b91c1c;
+    }
+    .stApp {
+        background: var(--bg);
+        color: var(--text);
+    }
+    [data-testid="stAppViewContainer"] {
+        background: var(--bg);
+        color: var(--text);
+    }
     .block-container {
         max-width: 760px;
         padding-top: 1.5rem;
         padding-bottom: 2.5rem;
+        background: var(--bg);
     }
     .card {
-        background: #ffffff;
-        border: 1px solid #e5e7eb;
+        background: var(--card);
+        border: 1px solid var(--border);
         border-radius: 14px;
         padding: 1rem 1rem 0.75rem 1rem;
         margin-bottom: 0.9rem;
+        box-shadow: 0 6px 22px rgba(15, 23, 42, 0.06);
     }
     .small-note {
-        color: #6b7280;
+        color: var(--muted);
         font-size: 0.9rem;
         margin-top: 0.3rem;
+    }
+    h1, h2, h3 {
+        color: var(--text) !important;
+        letter-spacing: -0.01em;
+    }
+    [data-testid="stCaptionContainer"] {
+        color: var(--muted);
+    }
+    p, label, span, div {
+        color: var(--text);
+    }
+    [data-testid="stMetric"] {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 0.75rem;
+    }
+    [data-testid="stMetricLabel"] {
+        color: var(--muted) !important;
+    }
+    [data-testid="stMetricValue"] {
+        color: var(--text) !important;
+    }
+    [data-testid="stVerticalBlock"] [data-testid="stMarkdownContainer"] p {
+        color: var(--text);
+    }
+    .stButton > button {
+        background: linear-gradient(135deg, var(--primary) 0%, var(--primary-strong) 100%);
+        color: #ffffff;
+        border: 1px solid var(--primary-strong);
+        border-radius: 10px;
+        font-weight: 600;
+    }
+    .stButton > button:hover {
+        filter: brightness(1.03);
+    }
+    .stTextInput input, .stNumberInput input, .stSelectbox div[data-baseweb="select"] > div {
+        border: 1px solid var(--border) !important;
+        background: #fffdf7 !important;
+        color: var(--text) !important;
+    }
+    .stSlider [data-baseweb="slider"] {
+        color: var(--primary-strong);
+    }
+    .stDataFrame, [data-testid="stDataFrame"] * {
+        color: var(--text) !important;
+    }
+    [data-testid="stDataFrame"] {
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        overflow: hidden;
     }
     @media (max-width: 768px) {
         .block-container {
