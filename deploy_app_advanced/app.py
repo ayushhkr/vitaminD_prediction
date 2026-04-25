@@ -22,31 +22,31 @@ st.markdown(
     """
     <style>
     :root {
-        --bg: #f5ecdc;
-        --surface: #fbf4e8;
-        --card: #fffaf0;
-        --border: #d8c6aa;
-        --text: #1f2937;
-        --muted: #4b5563;
-        --primary: #0f766e;
-        --primary-strong: #115e59;
-        --success: #2e7d32;
-        --warning: #b7791f;
-        --danger: #b91c1c;
+        --bg: #f6e6d5;
+        --surface: #fff2e2;
+        --card: #fffbf5;
+        --border: #dcbfa2;
+        --text: #3b2416;
+        --muted: #7a5034;
+        --primary: #c76b2a;
+        --primary-strong: #a6521f;
+        --success: #8a5a2b;
+        --warning: #b36a1e;
+        --danger: #9e3a22;
     }
     .stApp {
-        background: var(--bg);
+        background: linear-gradient(180deg, #f9ecdf 0%, var(--bg) 65%, #f3deca 100%);
         color: var(--text);
     }
     [data-testid="stAppViewContainer"] {
-        background: var(--bg);
+        background: transparent;
         color: var(--text);
     }
     .block-container {
         max-width: 760px;
         padding-top: 1.5rem;
         padding-bottom: 2.5rem;
-        background: var(--bg);
+        background: transparent;
     }
     .card {
         background: var(--card);
@@ -65,8 +65,16 @@ st.markdown(
         color: var(--text) !important;
         letter-spacing: -0.01em;
     }
+    [data-testid="stWidgetLabel"] p,
+    [data-testid="stWidgetLabel"] div,
+    [data-testid="stRadio"] label,
+    [data-testid="stSelectbox"] label,
+    [data-testid="stSlider"] label,
+    [data-testid="stNumberInput"] label {
+        color: var(--text) !important;
+    }
     [data-testid="stCaptionContainer"] {
-        color: var(--muted);
+        color: var(--muted) !important;
     }
     p, label, span, div {
         color: var(--text);
@@ -101,8 +109,23 @@ st.markdown(
         background: #fffdf7 !important;
         color: var(--text) !important;
     }
+    div[data-baseweb="popover"] * {
+        color: var(--text) !important;
+        background: #fff8ee !important;
+    }
     .stSlider [data-baseweb="slider"] {
         color: var(--primary-strong);
+    }
+    .stPlotlyChart {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 0.25rem 0.4rem;
+    }
+    [data-testid="stAlert"] {
+        color: var(--text) !important;
+        border-color: var(--border) !important;
+        background: #fff6ea !important;
     }
     .stDataFrame, [data-testid="stDataFrame"] * {
         color: var(--text) !important;
@@ -192,6 +215,27 @@ def _predict_value(model_obj, inputs: dict) -> float:
     return float(model_obj.predict(build_prediction_input(inputs))[0])
 
 
+def summarize_feature_changes(base_inputs: dict, updated_inputs: dict) -> str:
+    feature_labels = {
+        "Sun_Exposure_min": "Sun Exposure (min/day)",
+        "Skin_Exposure_percent": "Skin Exposure (%)",
+        "Fish_intake_week": "Fish Intake (/week)",
+        "Dairy_intake_week": "Dairy Intake (/week)",
+        "Physical_activity_hours_week": "Physical Activity (hrs/week)",
+        "Indoor_work_hours_day": "Indoor Work (hrs/day)",
+        "Alcohol_units_week": "Alcohol Units (/week)",
+    }
+
+    changes = []
+    for key, label in feature_labels.items():
+        base_val = float(base_inputs[key])
+        updated_val = float(updated_inputs[key])
+        if abs(updated_val - base_val) > 1e-9:
+            changes.append(f"{label}: {base_val:g} -> {updated_val:g}")
+
+    return " | ".join(changes) if changes else "No feature change"
+
+
 def generate_agentic_recommendations(model_obj, base_inputs: dict) -> tuple[list[dict], list[str]]:
     """
     Agentic pipeline:
@@ -248,6 +292,7 @@ def generate_agentic_recommendations(model_obj, base_inputs: dict) -> tuple[list
         impacts.append(
             {
                 "Intervention": scenario["name"],
+                "Feature Changes": summarize_feature_changes(base_inputs, updated_inputs),
                 "Projected Vitamin D (ng/mL)": round(scenario_prediction, 2),
                 "Predicted Change (ng/mL)": round(delta, 2),
                 "Projected Status": get_status(scenario_prediction),
@@ -279,14 +324,20 @@ def build_gauge(prediction: float) -> go.Figure:
             number={"suffix": " ng/mL"},
             gauge={
                 "axis": {"range": [0, GAUGE_MAX]},
-                "bar": {"color": "#2563eb"},
+                "bar": {"color": "#b45f2e"},
                 "steps": [
-                    {"range": [0, DEFICIENT_CUTOFF], "color": "#fecaca"},
-                    {"range": [DEFICIENT_CUTOFF, INSUFFICIENT_CUTOFF], "color": "#fde68a"},
-                    {"range": [INSUFFICIENT_CUTOFF, GAUGE_MAX], "color": "#bbf7d0"},
+                    {"range": [0, DEFICIENT_CUTOFF], "color": "#f8d7bf"},
+                    {"range": [DEFICIENT_CUTOFF, INSUFFICIENT_CUTOFF], "color": "#f6c58f"},
+                    {"range": [INSUFFICIENT_CUTOFF, GAUGE_MAX], "color": "#e8b07a"},
                 ],
             },
         )
+    )
+    fig.update_traces(number={"font": {"color": "#3b2416"}})
+    fig.update_layout(
+        paper_bgcolor="#fff2e2",
+        plot_bgcolor="#fff2e2",
+        font={"color": "#3b2416"},
     )
     fig.update_layout(height=280, margin={"l": 10, "r": 10, "t": 30, "b": 10})
     return fig
@@ -372,7 +423,8 @@ if predict_clicked:
     st.progress(progress_value, text="Prediction scale")
     st.plotly_chart(build_gauge(prediction), use_container_width=True, config={"displayModeBar": False})
 
-    st.subheader("Explainability")
+    st.subheader("Interpretation")
+    st.caption("Model interpretation of your input profile.")
     for reason in explain_prediction(model_input):
         st.write(f"- {reason}")
 
@@ -380,13 +432,13 @@ if predict_clicked:
     for tip in build_recommendations(model_input):
         st.write(f"- {tip}")
 
-    st.subheader("Agentic AI Pipeline")
-    st.caption("Intervention simulator: the app tries multiple lifestyle actions, re-runs the model, and ranks options by predicted Vitamin D improvement.")
+    st.subheader("Intervention Impact (What If You Change Sun, Diet, Activity)")
+    st.caption("This table estimates how your Vitamin D level may change if you increase sun exposure, improve diet, or adjust lifestyle factors.")
 
     ranked_impacts, prioritized_plan = generate_agentic_recommendations(model, model_input)
     ranked_df = pd.DataFrame(ranked_impacts)
     st.dataframe(
-        ranked_df[["Intervention", "Projected Vitamin D (ng/mL)", "Predicted Change (ng/mL)", "Projected Status"]],
+        ranked_df[["Intervention", "Feature Changes", "Projected Vitamin D (ng/mL)", "Predicted Change (ng/mL)", "Projected Status"]],
         use_container_width=True,
         hide_index=True,
     )
