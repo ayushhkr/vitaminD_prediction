@@ -236,6 +236,47 @@ def summarize_feature_changes(base_inputs: dict, updated_inputs: dict) -> str:
     return " | ".join(changes) if changes else "No feature change"
 
 
+def build_interpretation_table(model_obj, base_inputs: dict) -> pd.DataFrame:
+    baseline_prediction = _predict_value(model_obj, base_inputs)
+
+    sun_inputs = {
+        **base_inputs,
+        "Sun_Exposure_min": _bounded_update(base_inputs["Sun_Exposure_min"], 20.0, 0.0, 180.0),
+        "Skin_Exposure_percent": _bounded_update(base_inputs["Skin_Exposure_percent"], 15.0, 0.0, 100.0),
+    }
+    diet_inputs = {
+        **base_inputs,
+        "Fish_intake_week": _bounded_update(base_inputs["Fish_intake_week"], 3.0, 0.0, 14.0),
+        "Dairy_intake_week": _bounded_update(base_inputs["Dairy_intake_week"], 3.0, 0.0, 14.0),
+    }
+
+    sun_prediction = _predict_value(model_obj, sun_inputs)
+    diet_prediction = _predict_value(model_obj, diet_inputs)
+
+    rows = [
+        {
+            "Scenario": "Current baseline",
+            "Feature Changes": "No feature change",
+            "Predicted Vitamin D (ng/mL)": round(baseline_prediction, 2),
+            "Change vs Baseline (ng/mL)": 0.0,
+        },
+        {
+            "Scenario": "If sun exposure is increased",
+            "Feature Changes": summarize_feature_changes(base_inputs, sun_inputs),
+            "Predicted Vitamin D (ng/mL)": round(sun_prediction, 2),
+            "Change vs Baseline (ng/mL)": round(sun_prediction - baseline_prediction, 2),
+        },
+        {
+            "Scenario": "If diet intake is increased",
+            "Feature Changes": summarize_feature_changes(base_inputs, diet_inputs),
+            "Predicted Vitamin D (ng/mL)": round(diet_prediction, 2),
+            "Change vs Baseline (ng/mL)": round(diet_prediction - baseline_prediction, 2),
+        },
+    ]
+
+    return pd.DataFrame(rows)
+
+
 def generate_agentic_recommendations(model_obj, base_inputs: dict) -> tuple[list[dict], list[str]]:
     """
     Agentic pipeline:
@@ -427,6 +468,10 @@ if predict_clicked:
     st.caption("Model interpretation of your input profile.")
     for reason in explain_prediction(model_input):
         st.write(f"- {reason}")
+
+    st.write("Interpretation Table (What If Sun or Diet Is Increased)")
+    interpretation_df = build_interpretation_table(model, model_input)
+    st.dataframe(interpretation_df, use_container_width=True, hide_index=True)
 
     st.subheader("AI Recommendations")
     for tip in build_recommendations(model_input):
