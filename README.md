@@ -52,14 +52,11 @@ vitaminD_prediction/
 
 ### Custom Dataset
 
-File:
 
-- `data/VitaminD_Dataset.csv`
 
 Main target:
 
 - `VitaminD_Level_ng_ml`
-
 Typical input features:
 
 - `Age`

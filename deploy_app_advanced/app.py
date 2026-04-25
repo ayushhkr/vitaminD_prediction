@@ -13,7 +13,7 @@ GAUGE_MAX = 60.0
 
 
 st.set_page_config(
-    page_title="Vitamin D AI Prediction System",
+    page_title="Vitamin D AI Prediction System - Advanced",
     page_icon="D",
     layout="centered",
 )
@@ -131,8 +131,8 @@ def build_gauge(prediction: float) -> go.Figure:
     return fig
 
 
-st.title("Vitamin D AI Prediction System")
-st.caption("Portfolio-ready AI app for clinical-style Vitamin D level estimation.")
+st.title("Vitamin D AI Prediction System - Advanced")
+st.caption("Advanced portfolio edition with explainability and recommendation sections.")
 
 if not MODEL_PATH.exists():
     st.error(

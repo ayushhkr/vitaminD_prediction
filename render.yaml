@@ -1,7 +1,13 @@
 services:
   - type: web
-    name: vitamind-predictor
+    name: vitamind-predictor-simple
     runtime: python
     rootDir: deploy_app
+    buildCommand: pip install -r requirements.txt
+    startCommand: streamlit run app.py --server.port $PORT --server.address 0.0.0.0
+  - type: web
+    name: vitamind-predictor-advanced
+    runtime: python
+    rootDir: deploy_app_advanced
     buildCommand: pip install -r requirements.txt
     startCommand: streamlit run app.py --server.port $PORT --server.address 0.0.0.0
