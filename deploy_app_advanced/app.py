@@ -110,6 +110,93 @@ def build_recommendations(inputs: dict) -> list[str]:
     return recommendations
 
 
+def _bounded_update(base_value: float, delta: float, min_value: float, max_value: float) -> float:
+    return float(min(max(base_value + delta, min_value), max_value))
+
+
+def _predict_value(model_obj, inputs: dict) -> float:
+    return float(model_obj.predict(build_prediction_input(inputs))[0])
+
+
+def generate_agentic_recommendations(model_obj, base_inputs: dict) -> tuple[list[dict], list[str]]:
+    """
+    Agentic pipeline:
+    1) Build intervention scenarios
+    2) Re-run model for each scenario
+    3) Rank by predicted improvement
+    4) Return ranked impacts and action plan
+    """
+    baseline_prediction = _predict_value(model_obj, base_inputs)
+
+    scenarios = [
+        {
+            "name": "Increase sunlight exposure",
+            "advice": "Add 20 min/day sunlight and increase exposed skin where safe.",
+            "apply": lambda x: {
+                **x,
+                "Sun_Exposure_min": _bounded_update(x["Sun_Exposure_min"], 20.0, 0.0, 180.0),
+                "Skin_Exposure_percent": _bounded_update(x["Skin_Exposure_percent"], 15.0, 0.0, 100.0),
+            },
+        },
+        {
+            "name": "Improve diet quality",
+            "advice": "Increase fish and dairy frequency by around 3 servings/week each.",
+            "apply": lambda x: {
+                **x,
+                "Fish_intake_week": _bounded_update(x["Fish_intake_week"], 3.0, 0.0, 14.0),
+                "Dairy_intake_week": _bounded_update(x["Dairy_intake_week"], 3.0, 0.0, 14.0),
+            },
+        },
+        {
+            "name": "Increase activity and reduce indoor time",
+            "advice": "Add 2 hours/week activity and reduce indoor work time by 1.5 hours/day.",
+            "apply": lambda x: {
+                **x,
+                "Physical_activity_hours_week": _bounded_update(x["Physical_activity_hours_week"], 2.0, 0.0, 20.0),
+                "Indoor_work_hours_day": _bounded_update(x["Indoor_work_hours_day"], -1.5, 0.0, 16.0),
+            },
+        },
+        {
+            "name": "Reduce alcohol intake",
+            "advice": "Lower weekly alcohol units by 3 where possible.",
+            "apply": lambda x: {
+                **x,
+                "Alcohol_units_week": _bounded_update(x["Alcohol_units_week"], -3.0, 0.0, 30.0),
+            },
+        },
+    ]
+
+    impacts = []
+    for scenario in scenarios:
+        updated_inputs = scenario["apply"](base_inputs)
+        scenario_prediction = _predict_value(model_obj, updated_inputs)
+        delta = scenario_prediction - baseline_prediction
+        impacts.append(
+            {
+                "Intervention": scenario["name"],
+                "Projected Vitamin D (ng/mL)": round(scenario_prediction, 2),
+                "Predicted Change (ng/mL)": round(delta, 2),
+                "Projected Status": get_status(scenario_prediction),
+                "Advice": scenario["advice"],
+            }
+        )
+
+    ranked_impacts = sorted(impacts, key=lambda d: d["Predicted Change (ng/mL)"], reverse=True)
+
+    prioritized_plan = []
+    for impact in ranked_impacts:
+        if impact["Predicted Change (ng/mL)"] > 0:
+            prioritized_plan.append(
+                f"{impact['Intervention']}: {impact['Advice']} "
+                f"Expected gain: +{impact['Predicted Change (ng/mL)']:.2f} ng/mL"
+            )
+
+    if not prioritized_plan:
+        prioritized_plan.append("No positive intervention signal detected from current scenario set. Maintain current routine and monitor levels.")
+
+    return ranked_impacts, prioritized_plan
+
+
 def build_gauge(prediction: float) -> go.Figure:
     fig = go.Figure(
         go.Indicator(
@@ -218,5 +305,20 @@ if predict_clicked:
     st.subheader("AI Recommendations")
     for tip in build_recommendations(model_input):
         st.write(f"- {tip}")
+
+    st.subheader("Agentic AI Pipeline")
+    st.caption("Intervention simulator: the app tries multiple lifestyle actions, re-runs the model, and ranks options by predicted Vitamin D improvement.")
+
+    ranked_impacts, prioritized_plan = generate_agentic_recommendations(model, model_input)
+    ranked_df = pd.DataFrame(ranked_impacts)
+    st.dataframe(
+        ranked_df[["Intervention", "Projected Vitamin D (ng/mL)", "Predicted Change (ng/mL)", "Projected Status"]],
+        use_container_width=True,
+        hide_index=True,
+    )
+
+    st.write("Top priority actions")
+    for action in prioritized_plan[:3]:
+        st.write(f"- {action}")
 
 st.warning("This is for educational purposes only")
