@@ -450,7 +450,10 @@ if predict_clicked:
         "Physical_activity_hours_week": float(physical_activity),
         "Indoor_work_hours_day": float(indoor_work),
     }
+    st.session_state["last_model_input_advanced"] = model_input
 
+if "last_model_input_advanced" in st.session_state:
+    model_input = st.session_state["last_model_input_advanced"]
     input_df = build_prediction_input(model_input)
     prediction = float(model.predict(input_df)[0])
     status = get_status(prediction)

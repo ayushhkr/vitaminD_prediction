@@ -110,6 +110,73 @@ def build_recommendations(inputs: dict) -> list[str]:
     return recommendations
 
 
+def _bounded_update(base_value: float, delta: float, min_value: float, max_value: float) -> float:
+    return float(min(max(base_value + delta, min_value), max_value))
+
+
+def _predict_value(model_obj, inputs: dict) -> float:
+    return float(model_obj.predict(build_prediction_input(inputs))[0])
+
+
+def summarize_feature_changes(base_inputs: dict, updated_inputs: dict) -> str:
+    feature_labels = {
+        "Sun_Exposure_min": "Sun Exposure (min/day)",
+        "Skin_Exposure_percent": "Skin Exposure (%)",
+        "Fish_intake_week": "Fish Intake (/week)",
+        "Dairy_intake_week": "Dairy Intake (/week)",
+    }
+
+    changes = []
+    for key, label in feature_labels.items():
+        base_val = float(base_inputs[key])
+        updated_val = float(updated_inputs[key])
+        if abs(updated_val - base_val) > 1e-9:
+            changes.append(f"{label}: {base_val:g} -> {updated_val:g}")
+
+    return " | ".join(changes) if changes else "No feature change"
+
+
+def build_interpretation_table(model_obj, base_inputs: dict) -> pd.DataFrame:
+    baseline_prediction = _predict_value(model_obj, base_inputs)
+
+    sun_inputs = {
+        **base_inputs,
+        "Sun_Exposure_min": _bounded_update(base_inputs["Sun_Exposure_min"], 20.0, 0.0, 180.0),
+        "Skin_Exposure_percent": _bounded_update(base_inputs["Skin_Exposure_percent"], 15.0, 0.0, 100.0),
+    }
+    diet_inputs = {
+        **base_inputs,
+        "Fish_intake_week": _bounded_update(base_inputs["Fish_intake_week"], 3.0, 0.0, 14.0),
+        "Dairy_intake_week": _bounded_update(base_inputs["Dairy_intake_week"], 3.0, 0.0, 14.0),
+    }
+
+    sun_prediction = _predict_value(model_obj, sun_inputs)
+    diet_prediction = _predict_value(model_obj, diet_inputs)
+
+    rows = [
+        {
+            "Scenario": "Current baseline",
+            "Feature Changes": "No feature change",
+            "Predicted Vitamin D (ng/mL)": round(baseline_prediction, 2),
+            "Change vs Baseline (ng/mL)": 0.0,
+        },
+        {
+            "Scenario": "If sun exposure is increased",
+            "Feature Changes": summarize_feature_changes(base_inputs, sun_inputs),
+            "Predicted Vitamin D (ng/mL)": round(sun_prediction, 2),
+            "Change vs Baseline (ng/mL)": round(sun_prediction - baseline_prediction, 2),
+        },
+        {
+            "Scenario": "If diet intake is increased",
+            "Feature Changes": summarize_feature_changes(base_inputs, diet_inputs),
+            "Predicted Vitamin D (ng/mL)": round(diet_prediction, 2),
+            "Change vs Baseline (ng/mL)": round(diet_prediction - baseline_prediction, 2),
+        },
+    ]
+
+    return pd.DataFrame(rows)
+
+
 def build_gauge(prediction: float) -> go.Figure:
     fig = go.Figure(
         go.Indicator(
@@ -197,7 +264,10 @@ if predict_clicked:
         "Physical_activity_hours_week": float(physical_activity),
         "Indoor_work_hours_day": float(indoor_work),
     }
+    st.session_state["last_model_input"] = model_input
 
+if "last_model_input" in st.session_state:
+    model_input = st.session_state["last_model_input"]
     input_df = build_prediction_input(model_input)
     prediction = float(model.predict(input_df)[0])
     status = get_status(prediction)
@@ -214,6 +284,10 @@ if predict_clicked:
     st.subheader("Explainability")
     for reason in explain_prediction(model_input):
         st.write(f"- {reason}")
+
+    st.subheader("Interpretation Table (What If Sun or Diet Is Increased)")
+    interpretation_df = build_interpretation_table(model, model_input)
+    st.dataframe(interpretation_df, use_container_width=True, hide_index=True)
 
     st.subheader("AI Recommendations")
     for tip in build_recommendations(model_input):
