@@ -52,12 +52,10 @@ vitaminD_prediction/
 
 ### Custom Dataset
 
-
-
 Main target:
 
 - `VitaminD_Level_ng_ml`
-Typical input features:
+  Typical input features:
 
 - `Age`
 - `Gender`
