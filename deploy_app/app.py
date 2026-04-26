@@ -264,7 +264,7 @@ def build_gauge(prediction: float) -> go.Figure:
 
 
 st.title("Vitamin D AI Prediction System")
-st.caption("Clean, two-panel experience for quick screening or detailed analysis.")
+
 
 if not MODEL_PATH.exists():
     st.error(
