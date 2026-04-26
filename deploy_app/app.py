@@ -391,12 +391,9 @@ with right_panel:
             for tip in build_recommendations(model_input):
                 st.write(f"- {tip}")
 
-            st.subheader("Interpretation Table (What If Sun or Diet Is Increased)")
+            st.subheader("Interpretation Table (How changes affect prediction)")
             interpretation_df = build_interpretation_table(model, model_input)
             st.dataframe(interpretation_df, use_container_width=True, hide_index=True)
-
-            st.subheader("Chatbot")
-            st.info("Chatbot is not available in this deployment yet.")
 
         st.markdown("</div>", unsafe_allow_html=True)
 
