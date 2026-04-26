@@ -295,6 +295,14 @@ def get_openai_reply(api_key: str, conversation: list[dict], context: str) -> st
     return response.choices[0].message.content or "I could not generate a response right now."
 
 
+def get_secret_or_default(secret_key: str, default: str = "") -> str:
+    # On platforms without a secrets.toml file, st.secrets access can raise.
+    try:
+        return str(st.secrets.get(secret_key, default))
+    except Exception:
+        return default
+
+
 st.title("Vitamin D AI Prediction System")
 
 
@@ -430,7 +438,7 @@ with right_panel:
             st.subheader("Chatbot (OpenAI)")
             st.caption("Ask questions about your Vitamin D result and how to improve it.")
 
-            secrets_api_key = st.secrets.get("OPENAI_API_KEY", "")
+            secrets_api_key = get_secret_or_default("OPENAI_API_KEY", "")
             env_api_key = os.getenv("OPENAI_API_KEY", "")
             manual_api_key = st.text_input(
                 "OpenAI API Key",
