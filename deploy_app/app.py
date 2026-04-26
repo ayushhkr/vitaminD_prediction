@@ -1,9 +1,11 @@
 from pathlib import Path
+import os
 
 import joblib
 import pandas as pd
 import plotly.graph_objects as go
 import streamlit as st
+from openai import OpenAI
 
 
 MODEL_PATH = Path(__file__).resolve().parent / "advanced_model.pkl"
@@ -263,6 +265,36 @@ def build_gauge(prediction: float) -> go.Figure:
     return fig
 
 
+def build_chat_context(model_input: dict, prediction: float, status: str) -> str:
+    return (
+        "Prediction context:\n"
+        f"- Predicted Vitamin D: {prediction:.2f} ng/mL\n"
+        f"- Status: {status}\n"
+        f"- Sun exposure: {model_input['Sun_Exposure_min']:.0f} min/day\n"
+        f"- Physical activity: {model_input['Physical_activity_hours_week']:.1f} hrs/week\n"
+        f"- Fish intake: {model_input['Fish_intake_week']:.0f}/week\n"
+        f"- Dairy intake: {model_input['Dairy_intake_week']:.0f}/week\n"
+        f"- Indoor work: {model_input['Indoor_work_hours_day']:.1f} hrs/day\n"
+    )
+
+
+def get_openai_reply(api_key: str, conversation: list[dict], context: str) -> str:
+    client = OpenAI(api_key=api_key)
+    system_prompt = (
+        "You are a helpful Vitamin D health assistant in a Streamlit app. "
+        "Explain predictions in simple language, provide practical lifestyle suggestions, "
+        "and keep responses concise. Avoid diagnosis claims and remind users this is educational only."
+    )
+
+    messages = [{"role": "system", "content": system_prompt + "\n\n" + context}] + conversation
+    response = client.chat.completions.create(
+        model="gpt-4o-mini",
+        messages=messages,
+        temperature=0.4,
+    )
+    return response.choices[0].message.content or "I could not generate a response right now."
+
+
 st.title("Vitamin D AI Prediction System")
 
 
@@ -394,6 +426,63 @@ with right_panel:
             st.subheader("Interpretation Table (How changes affect prediction)")
             interpretation_df = build_interpretation_table(model, model_input)
             st.dataframe(interpretation_df, use_container_width=True, hide_index=True)
+
+            st.subheader("Chatbot (OpenAI)")
+            st.caption("Ask questions about your Vitamin D result and how to improve it.")
+
+            secrets_api_key = st.secrets.get("OPENAI_API_KEY", "")
+            env_api_key = os.getenv("OPENAI_API_KEY", "")
+            manual_api_key = st.text_input(
+                "OpenAI API Key",
+                type="password",
+                placeholder="sk-...",
+                help="Leave empty if OPENAI_API_KEY is configured in Streamlit secrets.",
+            )
+            api_key = (manual_api_key or secrets_api_key or env_api_key).strip()
+
+            if "chat_messages" not in st.session_state:
+                st.session_state["chat_messages"] = [
+                    {
+                        "role": "assistant",
+                        "content": "Hi. I am your Vitamin D assistant. Ask me about your prediction, status, or how to improve your levels.",
+                    }
+                ]
+
+            clear_col, _ = st.columns([1, 4])
+            with clear_col:
+                if st.button("Clear Chat", use_container_width=True):
+                    st.session_state["chat_messages"] = [
+                        {
+                            "role": "assistant",
+                            "content": "Chat cleared. Ask a new question about your Vitamin D report.",
+                        }
+                    ]
+
+            for message in st.session_state["chat_messages"]:
+                with st.chat_message(message["role"]):
+                    st.write(message["content"])
+
+            user_prompt = st.chat_input("Example: How can I move from insufficient to sufficient?")
+
+            if user_prompt:
+                st.session_state["chat_messages"].append({"role": "user", "content": user_prompt})
+                with st.chat_message("user"):
+                    st.write(user_prompt)
+
+                if not api_key:
+                    bot_reply = "Please provide an OpenAI API key in the field above or set OPENAI_API_KEY in Streamlit secrets."
+                else:
+                    try:
+                        with st.spinner("Thinking..."):
+                            context = build_chat_context(model_input, prediction, status)
+                            conversation = st.session_state["chat_messages"][-10:]
+                            bot_reply = get_openai_reply(api_key, conversation, context)
+                    except Exception as err:
+                        bot_reply = f"Chatbot error: {err}"
+
+                st.session_state["chat_messages"].append({"role": "assistant", "content": bot_reply})
+                with st.chat_message("assistant"):
+                    st.write(bot_reply)
 
         st.markdown("</div>", unsafe_allow_html=True)
 
