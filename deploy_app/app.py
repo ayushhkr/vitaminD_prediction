@@ -440,13 +440,7 @@ with right_panel:
 
             secrets_api_key = get_secret_or_default("OPENAI_API_KEY", "")
             env_api_key = os.getenv("OPENAI_API_KEY", "")
-            manual_api_key = st.text_input(
-                "OpenAI API Key",
-                type="password",
-                placeholder="sk-...",
-                help="Leave empty if OPENAI_API_KEY is configured in Streamlit secrets.",
-            )
-            api_key = (manual_api_key or secrets_api_key or env_api_key).strip()
+            api_key = (secrets_api_key or env_api_key).strip()
 
             if "chat_messages" not in st.session_state:
                 st.session_state["chat_messages"] = [
