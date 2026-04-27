@@ -36,6 +36,17 @@ APP_CSS = """
     padding-left: 0.75rem;
     padding-right: 0.75rem;
 }
+[data-testid="stSidebar"] .section-title {
+    margin-top: 0.25rem;
+    margin-bottom: 0.45rem;
+}
+[data-testid="stSidebar"] .section-gap {
+    height: 0.42rem;
+}
+[data-testid="stSidebar"] [data-testid="stSlider"] {
+    padding-top: 0.14rem;
+    padding-bottom: 0.14rem;
+}
 [data-testid="stSidebar"] h3 {
     margin-bottom: 0.2rem;
 }
@@ -55,7 +66,7 @@ APP_CSS = """
     margin: 0.15rem 0 0.45rem 0;
 }
 .section-gap {
-    height: 0.22rem;
+    height: 0.28rem;
 }
 .result-value {
     font-size: 2.65rem;

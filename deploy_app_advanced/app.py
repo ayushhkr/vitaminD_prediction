@@ -163,6 +163,7 @@ def render_output_panel(model, model_input: dict, active_mode: str) -> None:
     status_class = status_class_map.get(status, "status-chip")
 
     st.markdown('<div class="panel">', unsafe_allow_html=True)
+    st.divider()
     st.subheader("🔵 Prediction Output")
     summary_col, gauge_col = st.columns([2, 1], gap="medium")
 

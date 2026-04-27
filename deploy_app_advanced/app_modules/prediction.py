@@ -55,14 +55,20 @@ def explain_prediction(inputs: dict) -> list[str]:
 
     if len(reasons) < 2:
         if inputs["Sun_Exposure_min"] >= 30:
-            reasons.append("Sun exposure is relatively supportive for maintaining Vitamin D levels.")
+            reasons.append(
+                f"Sun exposure is {inputs['Sun_Exposure_min']:.0f} min/day, which is generally supportive for Vitamin D production."
+            )
         if (inputs["Fish_intake_week"] + inputs["Dairy_intake_week"]) >= 7:
-            reasons.append("Diet pattern includes useful Vitamin D food sources.")
+            reasons.append(
+                f"Dietary intake is {inputs['Fish_intake_week'] + inputs['Dairy_intake_week']:.0f} servings/week from fish and dairy, supporting intake from food."
+            )
         if inputs["Physical_activity_hours_week"] >= 3:
-            reasons.append("Activity pattern is supportive of healthier Vitamin D status.")
+            reasons.append(
+                f"Physical activity is {inputs['Physical_activity_hours_week']:.1f} hrs/week, indicating a more active routine."
+            )
 
     if not reasons:
-        reasons.append("Overall profile appears balanced, with no strong lifestyle risk signals detected.")
+        reasons.append("No major lifestyle risk signal is prominent based on the provided inputs.")
 
     return reasons[:4]
 
