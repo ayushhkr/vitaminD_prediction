@@ -17,10 +17,19 @@ from app_modules.styles import apply_global_styles
 st.set_page_config(page_title=PAGE_TITLE, page_icon=PAGE_ICON, layout=LAYOUT)
 apply_global_styles()
 
+QUICK_MODE = "⚡ Quick Estimate"
+DETAILED_MODE = "🧠 Detailed Analysis"
+
+
+def normalize_mode_label(mode_label: str) -> str:
+    if mode_label in {DETAILED_MODE, "Detailed Mode (Advanced)"}:
+        return DETAILED_MODE
+    return QUICK_MODE
+
 
 def render_input_panel() -> tuple[bool, dict, str]:
     defaults = st.session_state.get("last_model_input", {})
-    default_mode = st.session_state.get("last_mode", "Quick Mode (Basic)")
+    default_mode = normalize_mode_label(st.session_state.get("last_mode", QUICK_MODE))
 
     def _clamp(value, min_value, max_value):
         return max(min_value, min(max_value, value))
@@ -29,17 +38,23 @@ def render_input_panel() -> tuple[bool, dict, str]:
         st.markdown('<div class="panel">', unsafe_allow_html=True)
         mode = st.radio(
             "Input Mode",
-            ["Quick Mode (Basic)", "Detailed Mode (Advanced)"],
-            index=0 if default_mode == "Quick Mode (Basic)" else 1,
+            [QUICK_MODE, DETAILED_MODE],
+            index=0 if default_mode == QUICK_MODE else 1,
             horizontal=True,
         )
 
-        if mode == "Quick Mode (Basic)":
-            st.markdown('<div class="mode-label">Quick Estimate (faster, less accurate)</div>', unsafe_allow_html=True)
+        if mode == QUICK_MODE:
+            st.markdown(
+                '<div class="mode-label">Fast screening using core inputs only.</div>',
+                unsafe_allow_html=True,
+            )
         else:
-            st.markdown('<div class="mode-label">Detailed Analysis (more accurate)</div>', unsafe_allow_html=True)
+            st.markdown(
+                '<div class="mode-label">Richer profile inputs for better context and recommendations.</div>',
+                unsafe_allow_html=True,
+            )
 
-        st.markdown('<div class="section-title">Personal Info</div>', unsafe_allow_html=True)
+        st.markdown('<div class="section-title">🟢 Personal Info</div>', unsafe_allow_html=True)
         p_col1, p_col2 = st.columns(2)
         with p_col1:
             age = st.number_input(
@@ -67,15 +82,15 @@ def render_input_panel() -> tuple[bool, dict, str]:
         alcohol_units = int(_clamp(float(defaults.get("Alcohol_units_week", 0)), 0, 30))
         indoor_work = float(_clamp(float(defaults.get("Indoor_work_hours_day", 7.0)), 0.0, 16.0))
 
-        if mode == "Detailed Mode (Advanced)":
+        if mode == DETAILED_MODE:
             d_col1, d_col2 = st.columns(2)
             with d_col1:
                 gender = st.selectbox("Gender", list(gender_map.keys()), index=1 if gender == "Male" else 0)
             with d_col2:
                 body_fat = st.number_input("Body Fat %", min_value=5.0, max_value=60.0, value=body_fat, step=0.1)
 
-        st.markdown("<br>", unsafe_allow_html=True)
-        st.markdown('<div class="section-title">Lifestyle</div>', unsafe_allow_html=True)
+        st.markdown('<div class="section-gap"></div>', unsafe_allow_html=True)
+        st.markdown('<div class="section-title">🟡 Lifestyle</div>', unsafe_allow_html=True)
         l_col1, l_col2 = st.columns(2)
         with l_col1:
             sun_exposure = st.slider(
@@ -94,16 +109,16 @@ def render_input_panel() -> tuple[bool, dict, str]:
                 step=0.5,
             )
 
-        if mode == "Detailed Mode (Advanced)":
+        if mode == DETAILED_MODE:
             l2_col1, l2_col2 = st.columns(2)
             with l2_col1:
                 skin_exposure = st.slider("Skin Exposure %", min_value=0, max_value=100, value=skin_exposure, step=5)
             with l2_col2:
                 indoor_work = st.slider("Indoor work hours/day", min_value=0.0, max_value=16.0, value=indoor_work, step=0.5)
 
-        if mode == "Detailed Mode (Advanced)":
-            st.markdown("<br>", unsafe_allow_html=True)
-            st.markdown('<div class="section-title">Diet</div>', unsafe_allow_html=True)
+        if mode == DETAILED_MODE:
+            st.markdown('<div class="section-gap"></div>', unsafe_allow_html=True)
+            st.markdown('<div class="section-title">🟠 Diet</div>', unsafe_allow_html=True)
             diet_col1, diet_col2 = st.columns(2)
             with diet_col1:
                 fish_intake = st.slider("Fish intake/week", min_value=0, max_value=14, value=fish_intake, step=1)
@@ -111,7 +126,7 @@ def render_input_panel() -> tuple[bool, dict, str]:
             with diet_col2:
                 dairy_intake = st.slider("Dairy intake/week", min_value=0, max_value=14, value=dairy_intake, step=1)
 
-        st.markdown("<br>", unsafe_allow_html=True)
+        st.markdown('<div class="section-gap"></div>', unsafe_allow_html=True)
         _, btn_mid, _ = st.columns([1, 2.2, 1])
         with btn_mid:
             predict_clicked = st.button("Predict Vitamin D", use_container_width=True, type="primary")
@@ -142,8 +157,8 @@ def render_output_panel(model, model_input: dict, active_mode: str) -> None:
     status = get_status(prediction)
 
     st.markdown('<div class="panel">', unsafe_allow_html=True)
-    st.subheader("Prediction Output")
-    summary_col, gauge_col = st.columns([1.15, 1], gap="small")
+    st.subheader("🔵 Prediction Output")
+    summary_col, gauge_col = st.columns([1, 1], gap="medium")
 
     with summary_col:
         st.markdown(f'<div class="result-value">{prediction:.2f} ng/mL</div>', unsafe_allow_html=True)
@@ -154,19 +169,19 @@ def render_output_panel(model, model_input: dict, active_mode: str) -> None:
     with gauge_col:
         st.plotly_chart(build_gauge(prediction), use_container_width=True, config={"displayModeBar": False})
 
-    if active_mode == "Detailed Mode (Advanced)":
-        why_col, rec_col = st.columns(2, gap="small")
-        with why_col:
-            st.subheader("Why this prediction?")
-            reason_text = "\n".join(f"- {reason}" for reason in explain_prediction(model_input))
-            st.markdown(f'<div class="compact-list">{reason_text}</div>', unsafe_allow_html=True)
+    if active_mode == DETAILED_MODE:
+        st.divider()
+        st.subheader("🧠 Why this?")
+        reasons = explain_prediction(model_input)
+        st.markdown("\n".join(f"- {reason}" for reason in reasons))
 
-        with rec_col:
-            st.subheader("AI Recommendations")
-            tip_text = "\n".join(f"- {tip}" for tip in build_recommendations(model_input))
-            st.markdown(f'<div class="compact-list">{tip_text}</div>', unsafe_allow_html=True)
+        st.divider()
+        st.subheader("🤖 AI Recommendations")
+        tips = build_recommendations(model_input)
+        st.markdown("\n".join(f"- {tip}" for tip in tips))
 
-        st.subheader("Interpretation Table (What If Sun or Diet Is Increased)")
+        st.divider()
+        st.subheader("📊 What-If Analysis")
         interpretation_df = build_interpretation_table(model, model_input)
         render_interpretation_insights(interpretation_df)
 
@@ -199,10 +214,10 @@ if has_prediction:
     render_output_panel(
         model,
         st.session_state["last_model_input"],
-        st.session_state.get("last_mode", "Quick Mode (Basic)"),
+        normalize_mode_label(st.session_state.get("last_mode", QUICK_MODE)),
     )
 else:
-    left_panel, right_panel = st.columns([1, 1], gap="large")
+    left_panel, right_panel = st.columns([1, 1], gap="medium")
 
     with left_panel:
         predict_clicked, model_input, mode = render_input_panel()
@@ -216,7 +231,5 @@ else:
             render_output_panel(
                 model,
                 st.session_state["last_model_input"],
-                st.session_state.get("last_mode", "Quick Mode (Basic)"),
+                normalize_mode_label(st.session_state.get("last_mode", QUICK_MODE)),
             )
-
-st.warning("This is for educational purposes only")

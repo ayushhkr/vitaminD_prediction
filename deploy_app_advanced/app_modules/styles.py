@@ -17,8 +17,12 @@ APP_CSS = """
 }
 .block-container {
     max-width: 1180px;
-    padding-top: 0.65rem;
-    padding-bottom: 1.05rem;
+    padding-top: 0.3rem;
+    padding-bottom: 0.8rem;
+}
+.block-container h1 {
+    margin-top: 0.1rem;
+    margin-bottom: 0.25rem;
 }
 .panel {
     background: var(--panel);
@@ -26,18 +30,20 @@ APP_CSS = """
     border-radius: 16px;
     padding: 0.82rem 0.9rem 0.9rem 0.9rem;
     box-shadow: 0 10px 30px rgba(17, 24, 39, 0.06);
-    margin-bottom: 0.55rem;
+    margin-bottom: 0.4rem;
 }
 .section-title {
-    font-size: 0.92rem;
+    font-size: 0.95rem;
     font-weight: 700;
     letter-spacing: 0.02em;
     color: #374151;
-    text-transform: uppercase;
-    margin: 0.4rem 0 0.5rem 0;
+    margin: 0.15rem 0 0.45rem 0;
+}
+.section-gap {
+    height: 0.35rem;
 }
 .result-value {
-    font-size: 1.9rem;
+    font-size: 2.45rem;
     font-weight: 800;
     color: var(--text);
     line-height: 1.15;
@@ -60,11 +66,22 @@ APP_CSS = """
     line-height: 1.35;
     color: #1f2937;
 }
+[data-testid="stMarkdownContainer"] ul {
+    margin-top: 0.25rem;
+    margin-bottom: 0.3rem;
+    padding-left: 1.1rem;
+}
+[data-testid="stMarkdownContainer"] li {
+    font-size: 0.92rem;
+    line-height: 1.45;
+    margin-bottom: 0.22rem;
+    color: #1f2937;
+}
 .mode-label {
     color: var(--muted);
     font-size: 0.92rem;
-    margin-top: -0.2rem;
-    margin-bottom: 0.6rem;
+    margin-top: -0.05rem;
+    margin-bottom: 0.45rem;
 }
 .stButton > button {
     min-height: 3rem;
@@ -233,7 +250,7 @@ APP_CSS = """
         font-size: 0.86rem;
     }
     .result-value {
-        font-size: 1.75rem;
+        font-size: 2rem;
     }
     .status-chip {
         font-size: 0.8rem;
@@ -255,6 +272,9 @@ APP_CSS = """
     .panel {
         padding: 0.72rem;
         border-radius: 12px;
+    }
+    .result-value {
+        font-size: 1.75rem;
     }
     .section-title {
         font-size: 0.84rem;

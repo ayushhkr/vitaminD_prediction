@@ -43,29 +43,53 @@ def build_prediction_input(inputs: dict) -> pd.DataFrame:
 def explain_prediction(inputs: dict) -> list[str]:
     reasons = []
     if inputs["Sun_Exposure_min"] < 20:
-        reasons.append("Low sun exposure may lower Vitamin D production.")
+        reasons.append("Sun exposure is below 20 min/day, which can reduce natural Vitamin D synthesis.")
     if inputs["Indoor_work_hours_day"] > 8:
-        reasons.append("High indoor time may reduce UV exposure.")
+        reasons.append("Indoor work time is high, so UV exposure opportunities are limited.")
     if (inputs["Fish_intake_week"] + inputs["Dairy_intake_week"]) < 5:
-        reasons.append("Low diet intake of Vitamin D related foods may contribute.")
+        reasons.append("Dietary Vitamin D sources look low across fish and dairy intake.")
     if inputs["Physical_activity_hours_week"] < 3:
-        reasons.append("Low physical activity can be associated with lower Vitamin D status.")
+        reasons.append("Physical activity is on the lower side, which may correlate with less outdoor exposure.")
+    if inputs["BMI"] >= 30:
+        reasons.append("Higher BMI can be associated with lower circulating Vitamin D levels.")
+
+    if len(reasons) < 2:
+        if inputs["Sun_Exposure_min"] >= 30:
+            reasons.append("Sun exposure is relatively supportive for maintaining Vitamin D levels.")
+        if (inputs["Fish_intake_week"] + inputs["Dairy_intake_week"]) >= 7:
+            reasons.append("Diet pattern includes useful Vitamin D food sources.")
+        if inputs["Physical_activity_hours_week"] >= 3:
+            reasons.append("Activity pattern is supportive of healthier Vitamin D status.")
+
     if not reasons:
-        reasons.append("Input profile shows generally supportive lifestyle signals for Vitamin D.")
-    return reasons
+        reasons.append("Overall profile appears balanced, with no strong lifestyle risk signals detected.")
+
+    return reasons[:4]
 
 
 def build_recommendations(inputs: dict) -> list[str]:
     recommendations = []
     if inputs["Sun_Exposure_min"] < 20:
-        recommendations.append("Increase safe sunlight exposure during daytime.")
+        recommendations.append("Increase safe daytime sun exposure toward 20-30 minutes on most days.")
+    if inputs["Indoor_work_hours_day"] > 8:
+        recommendations.append("Add brief daylight breaks during long indoor work periods.")
     if (inputs["Fish_intake_week"] + inputs["Dairy_intake_week"]) < 5:
-        recommendations.append("Improve diet by adding Vitamin D rich foods like fish, eggs, and fortified dairy.")
+        recommendations.append("Add more Vitamin D-rich foods such as fatty fish, eggs, and fortified dairy.")
     if inputs["Physical_activity_hours_week"] < 3:
-        recommendations.append("Increase weekly physical activity with regular outdoor sessions.")
-    if not recommendations:
-        recommendations.append("Maintain your current lifestyle pattern and monitor Vitamin D periodically.")
-    return recommendations
+        recommendations.append("Increase weekly activity to at least 3-5 hours, with some outdoor sessions.")
+
+    baseline_actions = [
+        "Track progress for 8-12 weeks and recheck Vitamin D through a lab test.",
+        "Keep hydration, sleep, and meal timing consistent to support overall recovery and metabolism.",
+        "Discuss supplementation with a clinician if levels remain low despite lifestyle changes.",
+    ]
+
+    for action in baseline_actions:
+        if len(recommendations) >= 3:
+            break
+        recommendations.append(action)
+
+    return recommendations[:4]
 
 
 def _bounded_update(base_value: float, delta: float, min_value: float, max_value: float) -> float:
