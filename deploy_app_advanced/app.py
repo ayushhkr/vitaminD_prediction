@@ -155,16 +155,23 @@ def render_output_panel(model, model_input: dict, active_mode: str) -> None:
     input_df = build_prediction_input(model_input)
     prediction = float(model.predict(input_df)[0])
     status = get_status(prediction)
+    status_class_map = {
+        "Deficient": "status-chip status-deficient",
+        "Insufficient": "status-chip status-insufficient",
+        "Sufficient": "status-chip status-sufficient",
+    }
+    status_class = status_class_map.get(status, "status-chip")
 
     st.markdown('<div class="panel">', unsafe_allow_html=True)
     st.subheader("🔵 Prediction Output")
-    summary_col, gauge_col = st.columns([1, 1], gap="medium")
+    summary_col, gauge_col = st.columns([2, 1], gap="medium")
 
     with summary_col:
         st.markdown(f'<div class="result-value">{prediction:.2f} ng/mL</div>', unsafe_allow_html=True)
-        st.markdown(f'<div class="status-chip">Status: {status}</div>', unsafe_allow_html=True)
+        st.markdown(f'<div class="{status_class}">Status: {status}</div>', unsafe_allow_html=True)
         progress_value = min(max(prediction / GAUGE_MAX, 0.0), 1.0)
-        st.progress(progress_value, text="Prediction scale")
+        st.progress(progress_value)
+        st.caption("Prediction scale")
 
     with gauge_col:
         st.plotly_chart(build_gauge(prediction), use_container_width=True, config={"displayModeBar": False})
@@ -177,7 +184,23 @@ def render_output_panel(model, model_input: dict, active_mode: str) -> None:
 
         st.divider()
         st.subheader("🤖 AI Recommendations")
-        tips = build_recommendations(model_input)
+        tips = []
+        if status == "Deficient":
+            tips.append("Your predicted level is low; prioritize daily sunlight and nutrition changes consistently for the next 8-12 weeks.")
+        elif status == "Insufficient":
+            tips.append("You are close to a sufficient range; a modest increase in sun exposure and diet quality can improve levels.")
+        else:
+            tips.append("Your predicted level is in a healthy range; maintain your current routine and monitor periodically.")
+
+        for suggestion in build_recommendations(model_input):
+            if suggestion not in tips:
+                tips.append(suggestion)
+            if len(tips) >= 3:
+                break
+
+        while len(tips) < 3:
+            tips.append("Track your habits weekly so improvements in sunlight, diet, and activity stay consistent.")
+
         st.markdown("\n".join(f"- {tip}" for tip in tips))
 
         st.divider()

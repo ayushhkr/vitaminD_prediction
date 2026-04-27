@@ -43,7 +43,7 @@ APP_CSS = """
     background: var(--panel);
     border: 1px solid var(--border);
     border-radius: 16px;
-    padding: 0.82rem 0.9rem 0.9rem 0.9rem;
+    padding: 0.78rem 0.9rem 0.85rem 0.9rem;
     box-shadow: 0 10px 30px rgba(17, 24, 39, 0.06);
     margin-bottom: 0.4rem;
 }
@@ -55,34 +55,53 @@ APP_CSS = """
     margin: 0.15rem 0 0.45rem 0;
 }
 .section-gap {
-    height: 0.35rem;
+    height: 0.22rem;
 }
 .result-value {
-    font-size: 2.45rem;
+    font-size: 2.65rem;
     font-weight: 800;
     color: var(--text);
     line-height: 1.15;
     margin-top: 0.2rem;
-    margin-bottom: 0.22rem;
+    margin-bottom: 0.18rem;
 }
 .status-chip {
     display: inline-block;
-    padding: 0.32rem 0.68rem;
+    padding: 0.35rem 0.72rem;
     border-radius: 999px;
-    border: 1px solid #dbe6ff;
-    background: #eff6ff;
-    color: #1e40af;
-    font-weight: 600;
-    font-size: 0.88rem;
+    border: 1px solid #e5e7eb;
+    background: #f8fafc;
+    color: #334155;
+    font-weight: 700;
+    font-size: 0.95rem;
     margin-bottom: 0.42rem;
+}
+.status-deficient {
+    border-color: #fecaca;
+    background: #fef2f2;
+    color: #b91c1c;
+}
+.status-insufficient {
+    border-color: #fde68a;
+    background: #fffbeb;
+    color: #b45309;
+}
+.status-sufficient {
+    border-color: #bbf7d0;
+    background: #f0fdf4;
+    color: #166534;
 }
 .compact-list {
     font-size: 0.84rem;
     line-height: 1.35;
     color: #1f2937;
 }
+[data-testid="stCaptionContainer"] {
+    margin-top: -0.1rem;
+    color: #6b7280;
+}
 [data-testid="stMarkdownContainer"] ul {
-    margin-top: 0.25rem;
+    margin-top: 0.18rem;
     margin-bottom: 0.3rem;
     padding-left: 1.1rem;
 }
@@ -115,8 +134,11 @@ APP_CSS = """
     outline-offset: 2px;
 }
 [data-testid="stSlider"] {
-    padding-top: 0.15rem;
-    padding-bottom: 0.2rem;
+    padding-top: 0.08rem;
+    padding-bottom: 0.08rem;
+}
+[data-testid="stNumberInput"] {
+    margin-bottom: 0.05rem;
 }
 [data-testid="stMetric"] {
     background: #f8faff;
@@ -244,7 +266,7 @@ APP_CSS = """
         border-radius: 14px;
     }
     .result-value {
-        font-size: 1.95rem;
+        font-size: 2.25rem;
     }
 }
 @media (max-width: 900px) {
@@ -284,7 +306,7 @@ APP_CSS = """
         font-size: 0.86rem;
     }
     .result-value {
-        font-size: 2rem;
+        font-size: 2.1rem;
     }
     .status-chip {
         font-size: 0.8rem;
@@ -313,6 +335,10 @@ APP_CSS = """
     }
     .result-value {
         font-size: 1.75rem;
+    }
+    .status-chip {
+        font-size: 0.85rem;
+        padding: 0.3rem 0.58rem;
     }
     .section-title {
         font-size: 0.84rem;
