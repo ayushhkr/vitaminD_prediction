@@ -20,9 +20,24 @@ APP_CSS = """
     padding-top: 0.3rem;
     padding-bottom: 0.8rem;
 }
+.block-container > div[data-testid="stVerticalBlock"] {
+    gap: 0.45rem;
+}
 .block-container h1 {
     margin-top: 0.1rem;
     margin-bottom: 0.25rem;
+}
+[data-testid="stSidebar"] {
+    border-right: 1px solid #e5e7eb;
+    background: linear-gradient(180deg, #f8fbff 0%, #f7f7fb 100%);
+}
+[data-testid="stSidebar"] .block-container {
+    padding-top: 0.45rem;
+    padding-left: 0.75rem;
+    padding-right: 0.75rem;
+}
+[data-testid="stSidebar"] h3 {
+    margin-bottom: 0.2rem;
 }
 .panel {
     background: var(--panel);
@@ -94,6 +109,14 @@ APP_CSS = """
 }
 .stButton > button:hover {
     filter: brightness(1.03);
+}
+.stButton > button:focus-visible {
+    outline: 2px solid #93c5fd;
+    outline-offset: 2px;
+}
+[data-testid="stSlider"] {
+    padding-top: 0.15rem;
+    padding-bottom: 0.2rem;
 }
 [data-testid="stMetric"] {
     background: #f8faff;
@@ -242,6 +265,17 @@ APP_CSS = """
     }
 }
 @media (max-width: 768px) {
+    [data-testid="stSidebar"] {
+        border-right: none;
+    }
+    [data-testid="stSidebar"] .block-container {
+        padding-top: 0.35rem;
+        padding-left: 0.6rem;
+        padding-right: 0.6rem;
+    }
+    [data-testid="stSidebar"] .panel {
+        box-shadow: none;
+    }
     .block-container {
         padding-left: 0.75rem;
         padding-right: 0.75rem;
@@ -267,7 +301,11 @@ APP_CSS = """
     .block-container {
         padding-left: 0.55rem;
         padding-right: 0.55rem;
-        padding-top: 0.7rem;
+        padding-top: 0.45rem;
+    }
+    [data-testid="stSidebar"] .block-container {
+        padding-left: 0.5rem;
+        padding-right: 0.5rem;
     }
     .panel {
         padding: 0.72rem;

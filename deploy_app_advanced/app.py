@@ -205,6 +205,8 @@ has_prediction = "last_model_input" in st.session_state
 if has_prediction:
     with st.sidebar:
         st.subheader("Input Form")
+        st.caption("Update values and click Predict Vitamin D to refresh results.")
+        st.divider()
         predict_clicked, model_input, mode = render_input_panel()
 
     if predict_clicked:
