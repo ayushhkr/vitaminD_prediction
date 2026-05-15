@@ -104,11 +104,12 @@ def render_input_panel() -> tuple[bool, dict, str]:
                 "Height_cm": float(height_cm),
             }
         )
-        st.caption(
-            "Calculated automatically from your inputs: "
-            f"BMI {derived_preview['BMI']:.2f} | "
-            f"Estimated body fat {derived_preview['BodyFat_percent']:.2f}%"
-        )
+        derived_col1, derived_col2 = st.columns(2)
+        with derived_col1:
+            st.metric("Calculated BMI", f"{derived_preview['BMI']:.2f}")
+        with derived_col2:
+            st.metric("Estimated Body Fat %", f"{derived_preview['BodyFat_percent']:.2f}%")
+        st.caption("These values are calculated automatically from age, gender, height, and weight.")
 
         skin_exposure = int(_clamp(float(defaults.get("Skin_Exposure_percent", 40)), 0, 100))
         fish_intake = int(_clamp(float(defaults.get("Fish_intake_week", 2)), 0, 14))
