@@ -130,7 +130,39 @@ def get_status(vitamin_d_value: float) -> str:
     return "Sufficient"
 
 
+def _clamp(value: float, min_value: float, max_value: float) -> float:
+    return float(max(min_value, min(max_value, value)))
+
+
+def calculate_bmi(weight_kg: float, height_cm: float) -> float:
+    height_m = height_cm / 100.0
+    if height_m <= 0:
+        raise ValueError("Height must be greater than zero.")
+    return float(weight_kg / (height_m * height_m))
+
+
+def estimate_body_fat_percent(age: float, bmi: float, gender: float) -> float:
+    sex = 1.0 if float(gender) >= 0.5 else 0.0
+    if age >= 18:
+        estimate = 1.20 * bmi + 0.23 * age - 10.8 * sex - 5.4
+    else:
+        estimate = 1.51 * bmi - 0.70 * age - 3.6 * sex + 1.4
+    return _clamp(estimate, 5.0, 60.0)
+
+
+def enrich_model_inputs(inputs: dict) -> dict:
+    enriched = dict(inputs)
+    bmi = calculate_bmi(float(enriched["Weight_kg"]), float(enriched["Height_cm"]))
+    enriched["BMI"] = round(bmi, 2)
+    enriched["BodyFat_percent"] = round(
+        estimate_body_fat_percent(float(enriched["Age"]), bmi, float(enriched["Gender"])),
+        2,
+    )
+    return enriched
+
+
 def build_prediction_input(inputs: dict) -> pd.DataFrame:
+    enriched_inputs = enrich_model_inputs(inputs)
     column_order = [
         "Age",
         "Gender",
@@ -146,7 +178,7 @@ def build_prediction_input(inputs: dict) -> pd.DataFrame:
         "Physical_activity_hours_week",
         "Indoor_work_hours_day",
     ]
-    return pd.DataFrame([inputs])[column_order]
+    return pd.DataFrame([enriched_inputs])[column_order]
 
 
 def explain_prediction(inputs: dict) -> list[str]:
@@ -296,7 +328,6 @@ def get_openai_reply(api_key: str, conversation: list[dict], context: str) -> st
 
 
 def get_secret_or_default(secret_key: str, default: str = "") -> str:
-    # On platforms without a secrets.toml file, st.secrets access can raise.
     try:
         return str(st.secrets.get(secret_key, default))
     except Exception:
@@ -326,32 +357,43 @@ with left_panel:
     )
 
     if mode == "Quick Mode (Basic)":
-        st.markdown('<div class="mode-label">⚡ Quick Estimate (faster, less accurate)</div>', unsafe_allow_html=True)
+        st.markdown('<div class="mode-label">Quick Estimate (faster, less accurate)</div>', unsafe_allow_html=True)
     else:
-        st.markdown('<div class="mode-label">🧠 Detailed Analysis (more accurate)</div>', unsafe_allow_html=True)
+        st.markdown('<div class="mode-label">Detailed Analysis (more accurate)</div>', unsafe_allow_html=True)
 
     st.markdown('<div class="section-title">Personal Info</div>', unsafe_allow_html=True)
+    gender_map = {"Female": 0, "Male": 1}
     p_col1, p_col2 = st.columns(2)
     with p_col1:
         age = st.number_input("Age", min_value=1, max_value=100, value=25, step=1)
     with p_col2:
-        bmi = st.number_input("BMI", min_value=10.0, max_value=60.0, value=24.0, step=0.1)
+        gender = st.selectbox("Gender", list(gender_map.keys()), index=1)
 
-    gender_map = {"Female": 0, "Male": 1}
-    gender = "Male"
-    body_fat = 22.0
+    p_col3, p_col4 = st.columns(2)
+    with p_col3:
+        height_cm = st.number_input("Height (cm)", min_value=100.0, max_value=230.0, value=170.0, step=0.5)
+    with p_col4:
+        weight_kg = st.number_input("Weight (kg)", min_value=25.0, max_value=250.0, value=70.0, step=0.5)
+
+    derived_preview = enrich_model_inputs(
+        {
+            "Age": float(age),
+            "Gender": float(gender_map[gender]),
+            "Weight_kg": float(weight_kg),
+            "Height_cm": float(height_cm),
+        }
+    )
+    st.caption(
+        "Calculated automatically from your inputs: "
+        f"BMI {derived_preview['BMI']:.2f} | "
+        f"Estimated body fat {derived_preview['BodyFat_percent']:.2f}%"
+    )
+
     skin_exposure = 40
     fish_intake = 2
     dairy_intake = 4
     alcohol_units = 0
     indoor_work = 7.0
-
-    if mode == "Detailed Mode (Advanced)":
-        d_col1, d_col2 = st.columns(2)
-        with d_col1:
-            gender = st.selectbox("Gender", list(gender_map.keys()), index=1)
-        with d_col2:
-            body_fat = st.number_input("Body Fat %", min_value=5.0, max_value=60.0, value=22.0, step=0.1)
 
     st.markdown("<br>", unsafe_allow_html=True)
     st.markdown('<div class="section-title">Lifestyle</div>', unsafe_allow_html=True)
@@ -379,28 +421,28 @@ with left_panel:
             dairy_intake = st.slider("Dairy intake/week", min_value=0, max_value=14, value=4, step=1)
 
     st.markdown("<br>", unsafe_allow_html=True)
-    btn_left, btn_mid, btn_right = st.columns([1, 2.2, 1])
+    _, btn_mid, _ = st.columns([1, 2.2, 1])
     with btn_mid:
         predict_clicked = st.button("Predict Vitamin D", use_container_width=True, type="primary")
 
     st.markdown("</div>", unsafe_allow_html=True)
 
 if predict_clicked:
-    model_input = {
-        "Age": float(age),
-        "Gender": float(gender_map[gender]),
-        "Weight_kg": 70.0,
-        "Height_cm": 170.0,
-        "BMI": float(bmi),
-        "BodyFat_percent": float(body_fat),
-        "Sun_Exposure_min": float(sun_exposure),
-        "Skin_Exposure_percent": float(skin_exposure),
-        "Fish_intake_week": float(fish_intake),
-        "Dairy_intake_week": float(dairy_intake),
-        "Alcohol_units_week": float(alcohol_units),
-        "Physical_activity_hours_week": float(physical_activity),
-        "Indoor_work_hours_day": float(indoor_work),
-    }
+    model_input = enrich_model_inputs(
+        {
+            "Age": float(age),
+            "Gender": float(gender_map[gender]),
+            "Weight_kg": float(weight_kg),
+            "Height_cm": float(height_cm),
+            "Sun_Exposure_min": float(sun_exposure),
+            "Skin_Exposure_percent": float(skin_exposure),
+            "Fish_intake_week": float(fish_intake),
+            "Dairy_intake_week": float(dairy_intake),
+            "Alcohol_units_week": float(alcohol_units),
+            "Physical_activity_hours_week": float(physical_activity),
+            "Indoor_work_hours_day": float(indoor_work),
+        }
+    )
     st.session_state["last_model_input"] = model_input
     st.session_state["last_mode"] = mode
 
@@ -417,6 +459,10 @@ with right_panel:
         st.subheader("Prediction Output")
         st.markdown(f'<div class="result-value">{prediction:.2f} ng/mL</div>', unsafe_allow_html=True)
         st.markdown(f'<div class="status-chip">Status: {status}</div>', unsafe_allow_html=True)
+        st.caption(
+            f"Calculated BMI: {model_input['BMI']:.2f} | "
+            f"Estimated body fat: {model_input['BodyFat_percent']:.2f}%"
+        )
 
         progress_value = min(max(prediction / GAUGE_MAX, 0.0), 1.0)
         st.progress(progress_value, text="Prediction scale")

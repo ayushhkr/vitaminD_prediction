@@ -1,4 +1,5 @@
 import streamlit as st
+
 from app_modules.chatbot import init_chat_state, render_chat_widget
 from app_modules.constants import GAUGE_MAX, LAYOUT, MODEL_PATH, PAGE_ICON, PAGE_TITLE
 from app_modules.interpretation import render_interpretation_insights
@@ -7,6 +8,7 @@ from app_modules.prediction import (
     build_interpretation_table,
     build_prediction_input,
     build_recommendations,
+    enrich_model_inputs,
     explain_prediction,
     get_status,
     load_model,
@@ -17,8 +19,8 @@ from app_modules.styles import apply_global_styles
 st.set_page_config(page_title=PAGE_TITLE, page_icon=PAGE_ICON, layout=LAYOUT)
 apply_global_styles()
 
-QUICK_MODE = "⚡ Quick Estimate"
-DETAILED_MODE = "🧠 Detailed Analysis"
+QUICK_MODE = "Quick Estimate"
+DETAILED_MODE = "Detailed Analysis"
 
 
 def normalize_mode_label(mode_label: str) -> str:
@@ -33,6 +35,9 @@ def render_input_panel() -> tuple[bool, dict, str]:
 
     def _clamp(value, min_value, max_value):
         return max(min_value, min(max_value, value))
+
+    gender_map = {"Female": 0, "Male": 1}
+    default_gender = "Male" if float(defaults.get("Gender", 1.0)) >= 0.5 else "Female"
 
     with st.container():
         st.markdown('<div class="panel">', unsafe_allow_html=True)
@@ -54,7 +59,7 @@ def render_input_panel() -> tuple[bool, dict, str]:
                 unsafe_allow_html=True,
             )
 
-        st.markdown('<div class="section-title">🟢 Personal Info</div>', unsafe_allow_html=True)
+        st.markdown('<div class="section-title">Personal Info</div>', unsafe_allow_html=True)
         p_col1, p_col2 = st.columns(2)
         with p_col1:
             age = st.number_input(
@@ -65,32 +70,52 @@ def render_input_panel() -> tuple[bool, dict, str]:
                 step=1,
             )
         with p_col2:
-            bmi = st.number_input(
-                "BMI",
-                min_value=10.0,
-                max_value=60.0,
-                value=float(_clamp(float(defaults.get("BMI", 24.0)), 10.0, 60.0)),
-                step=0.1,
+            gender = st.selectbox(
+                "Gender",
+                list(gender_map.keys()),
+                index=1 if default_gender == "Male" else 0,
             )
 
-        gender_map = {"Female": 0, "Male": 1}
-        gender = "Male" if float(defaults.get("Gender", 1.0)) >= 0.5 else "Female"
-        body_fat = float(_clamp(float(defaults.get("BodyFat_percent", 22.0)), 5.0, 60.0))
+        p_col3, p_col4 = st.columns(2)
+        with p_col3:
+            height_cm = st.number_input(
+                "Height (cm)",
+                min_value=100.0,
+                max_value=230.0,
+                value=float(_clamp(float(defaults.get("Height_cm", 170.0)), 100.0, 230.0)),
+                step=0.5,
+            )
+        with p_col4:
+            weight_kg = st.number_input(
+                "Weight (kg)",
+                min_value=25.0,
+                max_value=250.0,
+                value=float(_clamp(float(defaults.get("Weight_kg", 70.0)), 25.0, 250.0)),
+                step=0.5,
+            )
+
+        derived_preview = enrich_model_inputs(
+            {
+                "Age": float(age),
+                "Gender": float(gender_map[gender]),
+                "Weight_kg": float(weight_kg),
+                "Height_cm": float(height_cm),
+            }
+        )
+        st.caption(
+            "Calculated automatically from your inputs: "
+            f"BMI {derived_preview['BMI']:.2f} | "
+            f"Estimated body fat {derived_preview['BodyFat_percent']:.2f}%"
+        )
+
         skin_exposure = int(_clamp(float(defaults.get("Skin_Exposure_percent", 40)), 0, 100))
         fish_intake = int(_clamp(float(defaults.get("Fish_intake_week", 2)), 0, 14))
         dairy_intake = int(_clamp(float(defaults.get("Dairy_intake_week", 4)), 0, 14))
         alcohol_units = int(_clamp(float(defaults.get("Alcohol_units_week", 0)), 0, 30))
         indoor_work = float(_clamp(float(defaults.get("Indoor_work_hours_day", 7.0)), 0.0, 16.0))
 
-        if mode == DETAILED_MODE:
-            d_col1, d_col2 = st.columns(2)
-            with d_col1:
-                gender = st.selectbox("Gender", list(gender_map.keys()), index=1 if gender == "Male" else 0)
-            with d_col2:
-                body_fat = st.number_input("Body Fat %", min_value=5.0, max_value=60.0, value=body_fat, step=0.1)
-
         st.markdown('<div class="section-gap"></div>', unsafe_allow_html=True)
-        st.markdown('<div class="section-title">🟡 Lifestyle</div>', unsafe_allow_html=True)
+        st.markdown('<div class="section-title">Lifestyle</div>', unsafe_allow_html=True)
         l_col1, l_col2 = st.columns(2)
         with l_col1:
             sun_exposure = st.slider(
@@ -118,7 +143,7 @@ def render_input_panel() -> tuple[bool, dict, str]:
 
         if mode == DETAILED_MODE:
             st.markdown('<div class="section-gap"></div>', unsafe_allow_html=True)
-            st.markdown('<div class="section-title">🟠 Diet</div>', unsafe_allow_html=True)
+            st.markdown('<div class="section-title">Diet</div>', unsafe_allow_html=True)
             diet_col1, diet_col2 = st.columns(2)
             with diet_col1:
                 fish_intake = st.slider("Fish intake/week", min_value=0, max_value=14, value=fish_intake, step=1)
@@ -133,21 +158,21 @@ def render_input_panel() -> tuple[bool, dict, str]:
 
         st.markdown("</div>", unsafe_allow_html=True)
 
-    model_input = {
-        "Age": float(age),
-        "Gender": float(gender_map[gender]),
-        "Weight_kg": 70.0,
-        "Height_cm": 170.0,
-        "BMI": float(bmi),
-        "BodyFat_percent": float(body_fat),
-        "Sun_Exposure_min": float(sun_exposure),
-        "Skin_Exposure_percent": float(skin_exposure),
-        "Fish_intake_week": float(fish_intake),
-        "Dairy_intake_week": float(dairy_intake),
-        "Alcohol_units_week": float(alcohol_units),
-        "Physical_activity_hours_week": float(physical_activity),
-        "Indoor_work_hours_day": float(indoor_work),
-    }
+    model_input = enrich_model_inputs(
+        {
+            "Age": float(age),
+            "Gender": float(gender_map[gender]),
+            "Weight_kg": float(weight_kg),
+            "Height_cm": float(height_cm),
+            "Sun_Exposure_min": float(sun_exposure),
+            "Skin_Exposure_percent": float(skin_exposure),
+            "Fish_intake_week": float(fish_intake),
+            "Dairy_intake_week": float(dairy_intake),
+            "Alcohol_units_week": float(alcohol_units),
+            "Physical_activity_hours_week": float(physical_activity),
+            "Indoor_work_hours_day": float(indoor_work),
+        }
+    )
     return predict_clicked, model_input, mode
 
 
@@ -164,12 +189,16 @@ def render_output_panel(model, model_input: dict, active_mode: str) -> None:
 
     st.markdown('<div class="panel">', unsafe_allow_html=True)
     st.divider()
-    st.subheader("🔵 Prediction Output")
+    st.subheader("Prediction Output")
     summary_col, gauge_col = st.columns([2, 1], gap="medium")
 
     with summary_col:
         st.markdown(f'<div class="result-value">{prediction:.2f} ng/mL</div>', unsafe_allow_html=True)
         st.markdown(f'<div class="{status_class}">Status: {status}</div>', unsafe_allow_html=True)
+        st.caption(
+            f"Calculated BMI: {model_input['BMI']:.2f} | "
+            f"Estimated body fat: {model_input['BodyFat_percent']:.2f}%"
+        )
         progress_value = min(max(prediction / GAUGE_MAX, 0.0), 1.0)
         st.progress(progress_value)
         st.caption("Prediction scale")
@@ -179,12 +208,12 @@ def render_output_panel(model, model_input: dict, active_mode: str) -> None:
 
     if active_mode == DETAILED_MODE:
         st.divider()
-        st.subheader("🧠 Why this?")
+        st.subheader("Why this?")
         reasons = explain_prediction(model_input)
         st.markdown("\n".join(f"- {reason}" for reason in reasons))
 
         st.divider()
-        st.subheader("🤖 AI Recommendations")
+        st.subheader("AI Recommendations")
         tips = []
         if status == "Deficient":
             tips.append("Your predicted level is low; prioritize daily sunlight and nutrition changes consistently for the next 8-12 weeks.")
@@ -205,7 +234,7 @@ def render_output_panel(model, model_input: dict, active_mode: str) -> None:
         st.markdown("\n".join(f"- {tip}" for tip in tips))
 
         st.divider()
-        st.subheader("📊 What-If Analysis")
+        st.subheader("What-If Analysis")
         interpretation_df = build_interpretation_table(model, model_input)
         render_interpretation_insights(interpretation_df)
 

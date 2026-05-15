@@ -21,7 +21,42 @@ def get_status(vitamin_d_value: float) -> str:
     return "Sufficient"
 
 
+def _clamp(value: float, min_value: float, max_value: float) -> float:
+    return float(max(min_value, min(max_value, value)))
+
+
+def calculate_bmi(weight_kg: float, height_cm: float) -> float:
+    height_m = height_cm / 100.0
+    if height_m <= 0:
+        raise ValueError("Height must be greater than zero.")
+    return float(weight_kg / (height_m * height_m))
+
+
+def estimate_body_fat_percent(age: float, bmi: float, gender: float) -> float:
+    # Deurenberg equations:
+    # Adults: body fat % = 1.20 * BMI + 0.23 * age - 10.8 * sex - 5.4
+    # Children/adolescents: body fat % = 1.51 * BMI - 0.70 * age - 3.6 * sex + 1.4
+    sex = 1.0 if float(gender) >= 0.5 else 0.0
+    if age >= 18:
+        estimate = 1.20 * bmi + 0.23 * age - 10.8 * sex - 5.4
+    else:
+        estimate = 1.51 * bmi - 0.70 * age - 3.6 * sex + 1.4
+    return _clamp(estimate, 5.0, 60.0)
+
+
+def enrich_model_inputs(inputs: dict) -> dict:
+    enriched = dict(inputs)
+    bmi = calculate_bmi(float(enriched["Weight_kg"]), float(enriched["Height_cm"]))
+    enriched["BMI"] = round(bmi, 2)
+    enriched["BodyFat_percent"] = round(
+        estimate_body_fat_percent(float(enriched["Age"]), bmi, float(enriched["Gender"])),
+        2,
+    )
+    return enriched
+
+
 def build_prediction_input(inputs: dict) -> pd.DataFrame:
+    enriched_inputs = enrich_model_inputs(inputs)
     column_order = [
         "Age",
         "Gender",
@@ -37,7 +72,7 @@ def build_prediction_input(inputs: dict) -> pd.DataFrame:
         "Physical_activity_hours_week",
         "Indoor_work_hours_day",
     ]
-    return pd.DataFrame([inputs])[column_order]
+    return pd.DataFrame([enriched_inputs])[column_order]
 
 
 def explain_prediction(inputs: dict) -> list[str]:
