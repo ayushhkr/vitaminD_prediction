@@ -17,15 +17,114 @@ APP_CSS = """
 }
 .block-container {
     max-width: 1180px;
-    padding-top: 0.3rem;
-    padding-bottom: 0.8rem;
+    padding-top: 0.15rem;
+    padding-bottom: 1rem;
 }
 .block-container > div[data-testid="stVerticalBlock"] {
     gap: 0.45rem;
 }
+[data-testid="stHeader"] {
+    background: transparent;
+}
+[data-testid="stToolbar"] {
+    top: 0.4rem;
+    right: 0.75rem;
+}
 .block-container h1 {
-    margin-top: 0.1rem;
-    margin-bottom: 0.25rem;
+    margin-top: 0;
+    margin-bottom: 0.35rem;
+}
+.hero-card {
+    position: relative;
+    overflow: hidden;
+    background:
+        radial-gradient(circle at top right, rgba(37, 99, 235, 0.18), transparent 34%),
+        linear-gradient(135deg, #ffffff 0%, #f7fbff 52%, #eef4ff 100%);
+    border: 1px solid rgba(191, 219, 254, 0.9);
+    border-radius: 22px;
+    padding: 1rem 1.15rem 1rem 1.15rem;
+    box-shadow: 0 18px 42px rgba(15, 23, 42, 0.08);
+    margin-bottom: 0.5rem;
+}
+.hero-card::after {
+    content: "";
+    position: absolute;
+    inset: auto -40px -60px auto;
+    width: 180px;
+    height: 180px;
+    border-radius: 999px;
+    background: radial-gradient(circle, rgba(147, 197, 253, 0.28) 0%, rgba(147, 197, 253, 0) 72%);
+    pointer-events: none;
+}
+.hero-eyebrow {
+    font-size: 0.75rem;
+    font-weight: 800;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: #1d4ed8;
+    margin-bottom: 0.35rem;
+}
+.hero-card p {
+    margin: 0;
+    max-width: 760px;
+    color: #475569;
+    font-size: 0.96rem;
+    line-height: 1.5;
+}
+.mode-switch-label {
+    font-size: 0.74rem;
+    font-weight: 800;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: #64748b;
+    margin-bottom: 0.4rem;
+}
+div[data-testid="stRadio"] {
+    margin-top: -0.05rem;
+    margin-bottom: 0.3rem;
+}
+div[data-testid="stRadio"] > div {
+    width: 100%;
+}
+div[data-testid="stRadio"] [role="radiogroup"] {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.45rem;
+    padding: 0.35rem;
+    background: linear-gradient(180deg, #eef4ff 0%, #f8fbff 100%);
+    border: 1px solid #dbeafe;
+    border-radius: 18px;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.9);
+}
+div[data-testid="stRadio"] [role="radiogroup"] label {
+    margin: 0;
+    min-height: 3rem;
+    border-radius: 14px;
+    border: 1px solid transparent;
+    background: rgba(255, 255, 255, 0.72);
+    padding: 0.65rem 0.9rem;
+    transition: all 0.18s ease;
+}
+div[data-testid="stRadio"] [role="radiogroup"] label:hover {
+    border-color: #bfdbfe;
+    background: rgba(255, 255, 255, 0.96);
+}
+div[data-testid="stRadio"] [role="radiogroup"] label:has(input:checked) {
+    background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+    border-color: #1d4ed8;
+    box-shadow: 0 8px 18px rgba(37, 99, 235, 0.22);
+}
+div[data-testid="stRadio"] [role="radiogroup"] label p {
+    margin: 0;
+    color: #334155;
+    font-weight: 700;
+    font-size: 0.93rem;
+}
+div[data-testid="stRadio"] [role="radiogroup"] label:has(input:checked) p {
+    color: #ffffff;
+}
+div[data-testid="stRadio"] [role="radiogroup"] label > div:first-child {
+    display: none;
 }
 [data-testid="stSidebar"] {
     border-right: 1px solid #e5e7eb;
@@ -53,20 +152,20 @@ APP_CSS = """
 .panel {
     background: var(--panel);
     border: 1px solid var(--border);
-    border-radius: 16px;
-    padding: 0.78rem 0.9rem 0.85rem 0.9rem;
-    box-shadow: 0 10px 30px rgba(17, 24, 39, 0.06);
-    margin-bottom: 0.4rem;
+    border-radius: 20px;
+    padding: 0.9rem 1rem 1rem 1rem;
+    box-shadow: 0 16px 34px rgba(17, 24, 39, 0.07);
+    margin-bottom: 0.45rem;
 }
 .section-title {
     font-size: 0.95rem;
     font-weight: 700;
     letter-spacing: 0.02em;
-    color: #374151;
-    margin: 0.15rem 0 0.45rem 0;
+    color: #1f2937;
+    margin: 0.18rem 0 0.5rem 0;
 }
 .section-gap {
-    height: 0.28rem;
+    height: 0.38rem;
 }
 .result-value {
     font-size: 2.65rem;
@@ -125,17 +224,18 @@ APP_CSS = """
 .mode-label {
     color: var(--muted);
     font-size: 0.92rem;
-    margin-top: -0.05rem;
-    margin-bottom: 0.45rem;
+    margin-top: 0.05rem;
+    margin-bottom: 0.55rem;
 }
 .stButton > button {
     min-height: 3rem;
-    border-radius: 12px;
+    border-radius: 14px;
     background: linear-gradient(135deg, var(--primary) 0%, var(--primary-strong) 100%);
     border: 1px solid var(--primary-strong);
     color: #ffffff;
     font-weight: 700;
     font-size: 1rem;
+    box-shadow: 0 12px 24px rgba(37, 99, 235, 0.2);
 }
 .stButton > button:hover {
     filter: brightness(1.03);
@@ -276,6 +376,10 @@ APP_CSS = """
         padding: 0.9rem;
         border-radius: 14px;
     }
+    .hero-card {
+        border-radius: 18px;
+        padding: 0.95rem 1rem;
+    }
     .result-value {
         font-size: 2.25rem;
     }
@@ -292,6 +396,9 @@ APP_CSS = """
     .stButton > button {
         min-height: 2.7rem;
         font-size: 0.95rem;
+    }
+    div[data-testid="stRadio"] [role="radiogroup"] {
+        grid-template-columns: 1fr;
     }
     .chat-log {
         max-height: 210px;
@@ -312,6 +419,9 @@ APP_CSS = """
     .block-container {
         padding-left: 0.75rem;
         padding-right: 0.75rem;
+    }
+    .hero-card {
+        padding: 0.85rem 0.9rem;
     }
     .mode-label {
         font-size: 0.86rem;
@@ -334,7 +444,7 @@ APP_CSS = """
     .block-container {
         padding-left: 0.55rem;
         padding-right: 0.55rem;
-        padding-top: 0.45rem;
+        padding-top: 0.3rem;
     }
     [data-testid="stSidebar"] .block-container {
         padding-left: 0.5rem;
@@ -353,6 +463,9 @@ APP_CSS = """
     }
     .section-title {
         font-size: 0.84rem;
+    }
+    .hero-card p {
+        font-size: 0.88rem;
     }
     .chat-widget-caption,
     .chat-context-chip,

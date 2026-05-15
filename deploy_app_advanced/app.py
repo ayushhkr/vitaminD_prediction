@@ -41,11 +41,13 @@ def render_input_panel() -> tuple[bool, dict, str]:
 
     with st.container():
         st.markdown('<div class="panel">', unsafe_allow_html=True)
+        st.markdown('<div class="mode-switch-label">Choose Analysis Mode</div>', unsafe_allow_html=True)
         mode = st.radio(
             "Input Mode",
             [QUICK_MODE, DETAILED_MODE],
             index=0 if default_mode == QUICK_MODE else 1,
             horizontal=True,
+            label_visibility="collapsed",
         )
 
         if mode == QUICK_MODE:
@@ -243,9 +245,16 @@ def render_output_panel(model, model_input: dict, active_mode: str) -> None:
 
     st.markdown("</div>", unsafe_allow_html=True)
 
-
-st.title(PAGE_TITLE)
-st.caption("Clean, two-panel experience for quick screening or detailed analysis.")
+st.markdown(
+    f"""
+    <div class="hero-card">
+        <div class="hero-eyebrow">Vitamin D Wellness Forecast</div>
+        <h1>{PAGE_TITLE}</h1>
+        <p>Quickly estimate Vitamin D levels from everyday health and lifestyle inputs with a cleaner guided experience.</p>
+    </div>
+    """,
+    unsafe_allow_html=True,
+)
 
 if not MODEL_PATH.exists():
     st.error("Model file 'advanced_model.pkl' was not found in deploy_app_advanced. Add the file and redeploy.")
