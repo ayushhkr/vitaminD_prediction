@@ -47,6 +47,11 @@ def render_interpretation_insights(interpretation_df: pd.DataFrame) -> None:
         f"({best_delta:+.2f} vs baseline)."
     )
 
-    with st.popover("See detailed scenario inputs"):
+    with st.expander("See detailed scenario inputs", expanded=False):
         st.caption("Detailed scenario table")
-        st.dataframe(interpretation_df, use_container_width=True, hide_index=True)
+        st.dataframe(
+            interpretation_df,
+            use_container_width=True,
+            hide_index=True,
+            height=280,
+        )
